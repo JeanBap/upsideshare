@@ -41,10 +41,11 @@ export function Providers({ children }: { children: React.ReactNode }) {
           .select('*')
           .eq('id', session.user.id)
           .single()
-          .then(({ data }) => {
+          .then(({ data }: { data: unknown }) => {
             if (data) {
-              setUser(data as Profile);
-              setRole(data.role as UserRole);
+              const profile = data as Profile;
+              setUser(profile);
+              setRole(profile.role as UserRole);
             }
             setLoading(false);
           });
@@ -58,14 +59,15 @@ export function Providers({ children }: { children: React.ReactNode }) {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (_event, session) => {
       if (session?.user) {
-        const { data } = await supabase
+        const { data }: { data: unknown } = await supabase
           .from('profiles')
           .select('*')
           .eq('id', session.user.id)
           .single();
         if (data) {
-          setUser(data as Profile);
-          setRole(data.role as UserRole);
+          const profile = data as Profile;
+          setUser(profile);
+          setRole(profile.role as UserRole);
         }
       } else {
         setUser(null);
