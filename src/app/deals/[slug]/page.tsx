@@ -1,7 +1,7 @@
 import DealDetailClient from './DealDetailClient';
 
 export function generateStaticParams() {
-  return [];
+  return [{ slug: 'placeholder' }];
 }
 
 export default function DealDetailPage() {

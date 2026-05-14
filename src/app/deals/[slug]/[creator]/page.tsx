@@ -1,7 +1,7 @@
 import CreatorLandingClient from './CreatorLandingClient';
 
 export function generateStaticParams() {
-  return [];
+  return [{ creator: 'placeholder' }];
 }
 
 export default function CreatorLandingPage() {
