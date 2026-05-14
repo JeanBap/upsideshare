@@ -1,0 +1,193 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* Purple */
+  --color-purple-50: #EEEDFE;
+  --color-purple-100: #CECBF6;
+  --color-purple-200: #AFA9EC;
+  --color-purple-400: #7F77DD;
+  --color-purple-600: #534AB7;
+  --color-purple-800: #3C3489;
+  --color-purple-900: #26215C;
+
+  /* Coral */
+  --color-coral-50: #FAECE7;
+  --color-coral-400: #D85A30;
+  --color-coral-600: #993C1D;
+
+  /* Semantic */
+  --color-success: #1D9E75;
+  --color-success-bg: #E1F5EE;
+  --color-warning: #BA7517;
+  --color-warning-bg: #FAEEDA;
+  --color-danger: #E24B4A;
+  --color-danger-bg: #FCEBEB;
+
+  /* Gray */
+  --color-gray-50: #FAFAF8;
+  --color-gray-100: #F1EFE8;
+  --color-gray-200: #D3D1C7;
+  --color-gray-400: #888780;
+  --color-gray-600: #5F5E5A;
+  --color-gray-800: #444441;
+  --color-gray-900: #2C2C2A;
+
+  /* Surface */
+  --color-background: #FFFFFF;
+  --color-foreground: #2C2C2A;
+  --color-surface: #FAFAF8;
+  --color-surface-raised: #FFFFFF;
+  --color-border: #D3D1C7;
+  --color-border-subtle: #F1EFE8;
+
+  /* Typography */
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+
+  /* Radii */
+  --radius: 10px;
+  --radius-lg: 16px;
+}
+
+[data-theme="dark"] {
+  /* Purple (adjusted for dark backgrounds) */
+  --color-purple-50: #1E1C3A;
+  --color-purple-100: #2A2755;
+  --color-purple-200: #3C3489;
+  --color-purple-400: #7F77DD;
+  --color-purple-600: #AFA9EC;
+  --color-purple-800: #CECBF6;
+  --color-purple-900: #EEEDFE;
+
+  /* Coral (adjusted for dark backgrounds) */
+  --color-coral-50: #3A1F14;
+  --color-coral-400: #E87A55;
+  --color-coral-600: #D85A30;
+
+  /* Semantic */
+  --color-success: #2CC98F;
+  --color-success-bg: #0F2E22;
+  --color-warning: #D99A3A;
+  --color-warning-bg: #2E2210;
+  --color-danger: #F06B6A;
+  --color-danger-bg: #3A1616;
+
+  /* Gray */
+  --color-gray-50: #1A1A19;
+  --color-gray-100: #242422;
+  --color-gray-200: #3A3A37;
+  --color-gray-400: #6E6D68;
+  --color-gray-600: #A8A7A2;
+  --color-gray-800: #D3D1C7;
+  --color-gray-900: #F1EFE8;
+
+  /* Surface */
+  --color-background: #141413;
+  --color-foreground: #F1EFE8;
+  --color-surface: #1A1A19;
+  --color-surface-raised: #242422;
+  --color-border: #3A3A37;
+  --color-border-subtle: #242422;
+}
+
+@layer base {
+  *,
+  *::before,
+  *::after {
+    border-color: var(--color-border);
+  }
+
+  body {
+    font-family: var(--font-sans);
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    color: var(--color-foreground);
+  }
+
+  h1 {
+    font-size: 2rem;
+    line-height: 1.2;
+  }
+
+  h2 {
+    font-size: 1.5rem;
+    line-height: 1.3;
+  }
+
+  h3 {
+    font-size: 1.25rem;
+    line-height: 1.4;
+  }
+
+  h4 {
+    font-size: 1.125rem;
+    line-height: 1.4;
+  }
+
+  p {
+    line-height: 1.6;
+  }
+
+  a {
+    color: var(--color-purple-600);
+    text-decoration: none;
+  }
+
+  a:hover {
+    color: var(--color-purple-800);
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply inline-flex items-center justify-center px-5 py-2.5 font-medium text-white bg-purple-600 rounded hover:bg-purple-800 transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:ring-offset-2;
+  }
+
+  .btn-secondary {
+    @apply inline-flex items-center justify-center px-5 py-2.5 font-medium text-purple-600 bg-purple-50 rounded hover:bg-purple-100 transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:ring-offset-2;
+  }
+
+  .btn-coral {
+    @apply inline-flex items-center justify-center px-5 py-2.5 font-medium text-white bg-coral-400 rounded hover:bg-coral-600 transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-coral-400 focus:ring-offset-2;
+  }
+
+  .btn-ghost {
+    @apply inline-flex items-center justify-center px-5 py-2.5 font-medium text-gray-600 bg-transparent rounded hover:bg-gray-100 transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-gray-200 focus:ring-offset-2;
+  }
+
+  .card {
+    @apply bg-white rounded-lg border border-gray-200 p-6 shadow-sm;
+  }
+
+  .input {
+    @apply w-full px-3.5 py-2.5 rounded border border-gray-200 bg-white text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-purple-400 transition-colors duration-150;
+  }
+
+  .badge {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+  }
+
+  .badge-success {
+    @apply badge bg-success-bg text-success;
+  }
+
+  .badge-warning {
+    @apply badge bg-warning-bg text-warning;
+  }
+
+  .badge-danger {
+    @apply badge bg-danger-bg text-danger;
+  }
+
+  .badge-purple {
+    @apply badge bg-purple-50 text-purple-600;
+  }
+}
