@@ -1,5 +1,5 @@
 import {
-  corsResponse,
+  handleCors,
   jsonResponse,
   errorResponse,
 } from "../_shared/cors.ts";
@@ -20,7 +20,7 @@ const EMAIL_REGEX =
   /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
 
 Deno.serve(async (req: Request) => {
-  if (req.method === "OPTIONS") return corsResponse();
+  if (req.method === "OPTIONS") return handleCors(req);
 
   const requestId =
     req.headers.get("x-request-id") ?? crypto.randomUUID();

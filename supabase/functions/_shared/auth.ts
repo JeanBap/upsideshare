@@ -74,13 +74,6 @@ export function createServiceClient(): SupabaseClient {
 }
 
 /**
- * Legacy alias kept for backward compatibility with existing functions.
- */
-export function getServiceClient(): SupabaseClient {
-  return createServiceClient();
-}
-
-/**
  * Create a Supabase client scoped to the authenticated user's JWT.
  */
 export function getUserClient(req: Request): SupabaseClient {

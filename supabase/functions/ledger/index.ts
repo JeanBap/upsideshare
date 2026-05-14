@@ -1,5 +1,5 @@
 import {
-  corsResponse,
+  handleCors,
   jsonResponse,
   errorResponse,
 } from "../_shared/cors.ts";
@@ -10,7 +10,7 @@ import {
 } from "../_shared/auth.ts";
 
 Deno.serve(async (req: Request) => {
-  if (req.method === "OPTIONS") return corsResponse();
+  if (req.method === "OPTIONS") return handleCors(req);
 
   const requestId =
     req.headers.get("x-request-id") ?? crypto.randomUUID();

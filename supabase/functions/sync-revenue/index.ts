@@ -1,5 +1,5 @@
 import { handleCors, jsonResponse, errorResponse } from "../_shared/cors.ts";
-import { getServiceClient } from "../_shared/auth.ts";
+import { createServiceClient } from "../_shared/auth.ts";
 import Stripe from "https://esm.sh/stripe@14";
 
 const PLATFORM_FEE_RATE = 0.05; // 5% of commission
@@ -27,7 +27,7 @@ Deno.serve(async (req: Request) => {
       return errorResponse("unauthorized", "Invalid cron secret", 401, requestId);
     }
 
-    const db = getServiceClient();
+    const db = createServiceClient();
 
     // Fetch all brands with active Stripe connections
     const { data: brands, error: brandsErr } = await db

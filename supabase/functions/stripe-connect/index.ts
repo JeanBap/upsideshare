@@ -1,5 +1,5 @@
 import { handleCors, jsonResponse, errorResponse } from "../_shared/cors.ts";
-import { getAuthUser, requireRole, getServiceClient } from "../_shared/auth.ts";
+import { getAuthUser, requireRole, createServiceClient } from "../_shared/auth.ts";
 import Stripe from "https://esm.sh/stripe@14";
 
 Deno.serve(async (req: Request) => {
@@ -38,7 +38,7 @@ Deno.serve(async (req: Request) => {
     }
 
     // Verify the user is a brand
-    const db = getServiceClient();
+    const db = createServiceClient();
     const profile = await requireRole(user, "brand", db);
     if (!profile) {
       return errorResponse("forbidden", "Only brand accounts can connect Stripe", 403, requestId);

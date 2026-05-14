@@ -18,7 +18,7 @@ import { Card } from '@/components/ui/Card';
 import { StatCard } from '@/components/ui/StatCard';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
-import { cn } from '@/lib/utils';
+import { cn, formatCurrency } from '@/lib/utils';
 
 interface RevenueStream {
   id: string;
@@ -107,10 +107,6 @@ const AVAILABLE_STREAMS: StreamType[] = [
   'video-shoutouts',
   'custom',
 ];
-
-function formatCurrency(cents: number): string {
-  return `$${cents.toLocaleString('en-US')}`;
-}
 
 export default function BackofficePage() {
   const [streams] = useState<RevenueStream[]>(MOCK_STREAMS);

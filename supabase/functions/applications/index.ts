@@ -6,7 +6,7 @@ import {
 import {
   getAuthUser,
   requireRole,
-  getServiceClient,
+  createServiceClient,
 } from "../_shared/auth.ts";
 
 function generateCouponCode(prefix: string): string {
@@ -35,7 +35,7 @@ Deno.serve(async (req: Request) => {
   if (cors) return cors;
 
   const requestId = crypto.randomUUID();
-  const db = getServiceClient();
+  const db = createServiceClient();
 
   try {
     // ---- POST: creator applies to a deal ----

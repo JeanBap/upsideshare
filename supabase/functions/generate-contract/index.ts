@@ -1,5 +1,5 @@
 import {
-  corsResponse,
+  handleCors,
   jsonResponse,
   errorResponse,
 } from "../_shared/cors.ts";
@@ -415,7 +415,7 @@ async function generatePdf(input: ContractInput): Promise<Uint8Array> {
 }
 
 Deno.serve(async (req: Request) => {
-  if (req.method === "OPTIONS") return corsResponse();
+  if (req.method === "OPTIONS") return handleCors(req);
 
   const requestId =
     req.headers.get("x-request-id") ?? crypto.randomUUID();

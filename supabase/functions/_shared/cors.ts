@@ -16,13 +16,6 @@ export function handleCors(req: Request): Response | null {
 }
 
 /**
- * Legacy alias kept for backward compatibility with existing functions.
- */
-export function corsResponse(): Response {
-  return new Response(null, { status: 204, headers: corsHeaders });
-}
-
-/**
  * Returns a JSON Response with CORS headers attached.
  */
 export function jsonResponse(

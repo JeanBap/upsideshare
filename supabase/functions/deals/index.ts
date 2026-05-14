@@ -6,7 +6,7 @@ import {
 import {
   getAuthUser,
   requireRole,
-  getServiceClient,
+  createServiceClient,
 } from "../_shared/auth.ts";
 
 const MAX_LIMIT = 50;
@@ -26,7 +26,7 @@ Deno.serve(async (req: Request) => {
 
   const requestId = crypto.randomUUID();
   const url = new URL(req.url);
-  const db = getServiceClient();
+  const db = createServiceClient();
 
   try {
     // ---- GET: list deals or get single deal by slug ----
