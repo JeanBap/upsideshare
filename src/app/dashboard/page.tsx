@@ -217,7 +217,7 @@ export default function DashboardPage() {
   const [loading] = useState(false);
 
   return (
-    <div className="flex flex-col min-h-screen bg-gray-50 pb-20">
+    <main id="main-content" className="flex flex-col min-h-screen bg-gray-50 pb-20">
       {/* Role toggle (for demo) */}
       <div className="sticky top-0 z-40 flex items-center justify-end gap-2 bg-white border-b border-gray-200 px-5 py-2">
         <span className="text-xs text-gray-400">View as:</span>
@@ -251,6 +251,6 @@ export default function DashboardPage() {
         role={role}
         activeTab={role === 'creator' ? 'home' : 'revenue'}
       />
-    </div>
+    </main>
   );
 }

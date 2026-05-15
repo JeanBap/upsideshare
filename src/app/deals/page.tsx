@@ -164,6 +164,7 @@ export default function DealsPage() {
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
+            aria-label="Search deals"
             placeholder="Search deals..."
             className="w-full rounded-[10px] border border-gray-200 bg-gray-50 py-2.5 pl-10 pr-4 text-sm text-gray-900 placeholder-gray-400 focus:border-purple-400 focus:outline-none focus:ring-2 focus:ring-purple-400"
           />
@@ -188,7 +189,7 @@ export default function DealsPage() {
       </header>
 
       {/* Deal grid */}
-      <main className="flex-1 px-5 pt-4">
+      <main id="main-content" className="flex-1 px-5 pt-4">
         {loading ? (
           <div className="grid gap-4">
             {Array.from({ length: 3 }).map((_, i) => (
@@ -217,9 +218,9 @@ export default function DealsPage() {
                     </div>
                   </div>
 
-                  <h3 className="text-base font-semibold text-gray-900 leading-snug">
+                  <h2 className="text-base font-semibold text-gray-900 leading-snug">
                     {deal.title}
-                  </h3>
+                  </h2>
 
                   <p className="text-sm text-gray-600 line-clamp-2">
                     {deal.description}

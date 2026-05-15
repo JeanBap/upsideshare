@@ -41,7 +41,7 @@ const MOCK_DEALS = [
 
 export default function LandingPage() {
   return (
-    <div className="flex flex-col min-h-screen">
+    <main id="main-content" className="flex flex-col min-h-screen">
       {/* ───────────── Hero ───────────── */}
       <section className="relative bg-gradient-to-b from-purple-600 to-purple-800 px-5 pb-16 pt-14 text-white">
         <div className="mx-auto max-w-lg">
@@ -201,6 +201,6 @@ export default function LandingPage() {
           All revenue tracked and verified via Stripe
         </p>
       </footer>
-    </div>
+    </main>
   );
 }

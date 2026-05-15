@@ -26,6 +26,9 @@ export default function RootLayout({
         <link rel="dns-prefetch" href="https://tosyulolriavzgkpwzrn.supabase.co" />
       </head>
       <body className="min-h-full flex flex-col font-sans bg-gray-50">
+        <a href="#main-content" className="skip-link">
+          Skip to main content
+        </a>
         <Providers>{children}</Providers>
       </body>
     </html>

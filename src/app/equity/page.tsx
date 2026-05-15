@@ -57,7 +57,7 @@ export default function EquityPage() {
     <div className="flex min-h-screen flex-col bg-gray-50 pb-24">
       <TopBar title="Create equity contract" showBack onBack={() => {}} />
 
-      <main className="flex-1 space-y-5 px-4 py-5">
+      <main id="main-content" className="flex-1 space-y-5 px-4 py-5">
         {/* Info banner */}
         <div className="flex items-start gap-3 rounded-xl bg-amber-50 border border-amber-200 px-4 py-3">
           <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-600" />
@@ -148,9 +148,9 @@ export default function EquityPage() {
 
         {/* Revenue target unlock */}
         <Card variant="surface" className="space-y-3">
-          <h3 className="text-sm font-semibold text-gray-900">
+          <h2 className="text-sm font-semibold text-gray-900">
             Revenue target unlock
-          </h3>
+          </h2>
 
           <div className="flex gap-2">
             <button
