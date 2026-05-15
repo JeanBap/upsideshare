@@ -331,6 +331,8 @@ export default function LandingPage() {
           <Link href="/deals" className="hover:text-gray-300">Deals</Link>
           <Link href="/signup" className="hover:text-gray-300">Sign up</Link>
           <a href="mailto:hello@upsideshare.com" className="hover:text-gray-300">Contact</a>
+          <Link href="/privacy" className="hover:text-gray-300">Privacy</Link>
+          <Link href="/terms" className="hover:text-gray-300">Terms</Link>
         </nav>
         <p className="mt-4 text-xs text-gray-600">
           &copy; {new Date().getFullYear()} UpsideShare. All rights reserved.
