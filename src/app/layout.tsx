@@ -21,6 +21,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`${inter.variable} h-full antialiased`}>
+      <head>
+        <link rel="preconnect" href="https://tosyulolriavzgkpwzrn.supabase.co" />
+        <link rel="dns-prefetch" href="https://tosyulolriavzgkpwzrn.supabase.co" />
+      </head>
       <body className="min-h-full flex flex-col font-sans bg-gray-50">
         <Providers>{children}</Providers>
       </body>
