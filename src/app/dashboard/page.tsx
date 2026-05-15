@@ -3,31 +3,153 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Card } from '@/components/ui/Card';
-import { Badge } from '@/components/ui/Badge';
-import { Button } from '@/components/ui/Button';
-import { StatCard } from '@/components/ui/StatCard';
-import { NavBar } from '@/components/ui/NavBar';
-import { Skeleton } from '@/components/ui/Skeleton';
+import { Tag, DollarSign, Users, Zap, ArrowRight, AlertCircle, Plus, Search } from 'lucide-react';
 import { useAuth } from '@/components/Providers';
 import { createClient } from '@/lib/supabase';
+import { NavBar } from '@/components/ui/NavBar';
 import { getGreeting, formatCurrency } from '@/lib/utils';
 
-function DashboardSkeleton() {
+/* ─── Shared components ─── */
+
+function Avatar({ name, size = 40 }: { name: string; size?: number }) {
+  const initials = name
+    .split(' ')
+    .map(w => w[0])
+    .join('')
+    .slice(0, 2)
+    .toUpperCase();
   return (
-    <div className="space-y-6 px-5 pt-6">
-      <Skeleton className="h-8 w-48" />
-      <div className="grid grid-cols-2 gap-3">
-        {Array.from({ length: 4 }).map((_, i) => (
-          <Skeleton key={i} className="h-24" />
-        ))}
-      </div>
-      <Skeleton className="h-48 w-full" />
+    <div
+      className="flex items-center justify-center rounded-full bg-purple-600 text-white font-bold"
+      style={{ width: size, height: size, fontSize: size * 0.38 }}
+    >
+      {initials}
     </div>
   );
 }
 
-/* ─── Creator view ─── */
+function StripeBanner({ role }: { role: string }) {
+  return (
+    <div className="mx-5 mt-4 flex items-center gap-3 rounded-xl border border-amber-200 bg-amber-50 p-3">
+      <AlertCircle className="h-5 w-5 text-amber-600 shrink-0" />
+      <div className="flex-1 min-w-0">
+        <p className="text-sm font-semibold text-amber-800">Connect Stripe</p>
+        <p className="text-xs text-amber-600">
+          {role === 'brand'
+            ? 'Link your Stripe account so we can track revenue from your deals.'
+            : 'Connect Stripe to receive payouts from your deals.'}
+        </p>
+      </div>
+      <Link href="/onboarding" className="shrink-0 rounded-lg bg-amber-600 px-3 py-1.5 text-xs font-semibold text-white">
+        Connect
+      </Link>
+    </div>
+  );
+}
+
+function Stat({ label, value, icon }: { label: string; value: string; icon: React.ReactNode }) {
+  return (
+    <div className="rounded-2xl bg-white border border-gray-100 p-4">
+      <div className="flex items-center gap-2 text-gray-400 mb-1">
+        {icon}
+        <span className="text-[11px] font-medium uppercase tracking-wide">{label}</span>
+      </div>
+      <p className="text-xl font-bold text-gray-900">{value}</p>
+    </div>
+  );
+}
+
+function SectionHeader({ title, action, actionHref }: { title: string; action?: string; actionHref?: string }) {
+  return (
+    <div className="flex items-center justify-between px-5 mt-6 mb-3">
+      <h2 className="text-sm font-bold text-gray-900 uppercase tracking-wide">{title}</h2>
+      {action && actionHref && (
+        <Link href={actionHref} className="flex items-center gap-1 text-xs font-semibold text-purple-600">
+          {action} <ArrowRight className="h-3 w-3" />
+        </Link>
+      )}
+    </div>
+  );
+}
+
+function DealRow({ title, subtitle, rightTop, rightBottom, badgeColor }: {
+  title: string;
+  subtitle: string;
+  rightTop: string;
+  rightBottom: string;
+  badgeColor: string;
+}) {
+  return (
+    <div className="flex items-center gap-3 px-5 py-3 border-b border-gray-50 last:border-0">
+      <div className={`h-2 w-2 rounded-full shrink-0 ${badgeColor}`} />
+      <div className="flex-1 min-w-0">
+        <p className="text-sm font-semibold text-gray-900 truncate">{title}</p>
+        <p className="text-xs text-gray-400">{subtitle}</p>
+      </div>
+      <div className="text-right shrink-0">
+        <p className="text-sm font-bold text-gray-900">{rightTop}</p>
+        <p className="text-[10px] text-gray-400">{rightBottom}</p>
+      </div>
+    </div>
+  );
+}
+
+function EmptyCard({ icon, title, body, ctaLabel, ctaHref }: {
+  icon: React.ReactNode;
+  title: string;
+  body: string;
+  ctaLabel: string;
+  ctaHref: string;
+}) {
+  return (
+    <div className="mx-5 rounded-2xl border border-dashed border-gray-200 bg-white p-8 text-center">
+      <div className="flex h-12 w-12 mx-auto items-center justify-center rounded-xl bg-purple-50 text-purple-600 mb-3">
+        {icon}
+      </div>
+      <p className="text-sm font-bold text-gray-900">{title}</p>
+      <p className="mt-1 text-xs text-gray-400">{body}</p>
+      <Link href={ctaHref}>
+        <button className="mt-4 inline-flex items-center gap-2 rounded-xl bg-purple-600 px-5 py-2.5 text-sm font-semibold text-white">
+          {ctaLabel} <ArrowRight className="h-4 w-4" />
+        </button>
+      </Link>
+    </div>
+  );
+}
+
+function QuickAction({ icon, label, href }: { icon: React.ReactNode; label: string; href: string }) {
+  return (
+    <Link href={href} className="flex items-center gap-3 rounded-xl bg-white border border-gray-100 px-4 py-3">
+      <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-purple-50 text-purple-600">
+        {icon}
+      </div>
+      <span className="text-sm font-medium text-gray-700 flex-1">{label}</span>
+      <ArrowRight className="h-4 w-4 text-gray-300" />
+    </Link>
+  );
+}
+
+/* ─── Loading ─── */
+function LoadingSkeleton() {
+  return (
+    <div className="px-5 pt-6 space-y-4 animate-pulse">
+      <div className="flex items-center gap-3">
+        <div className="h-10 w-10 rounded-full bg-gray-200" />
+        <div className="space-y-2">
+          <div className="h-4 w-32 rounded bg-gray-200" />
+          <div className="h-3 w-20 rounded bg-gray-200" />
+        </div>
+      </div>
+      <div className="grid grid-cols-2 gap-3">
+        <div className="h-20 rounded-2xl bg-gray-200" />
+        <div className="h-20 rounded-2xl bg-gray-200" />
+      </div>
+      <div className="h-32 rounded-2xl bg-gray-200" />
+    </div>
+  );
+}
+
+/* ─── Creator dashboard ─── */
 
 interface CreatorDeal {
   id: string;
@@ -38,64 +160,96 @@ interface CreatorDeal {
   status: string;
 }
 
-function CreatorDashboard({ deals, totalEarnings, pendingPayout }: {
+function CreatorView({ deals, totalEarnings, pendingPayout, displayName, stripeConnected }: {
   deals: CreatorDeal[];
   totalEarnings: number;
   pendingPayout: number;
+  displayName: string;
+  stripeConnected: boolean;
 }) {
   const greeting = getGreeting();
-  const activeCount = deals.filter(d => d.status === 'approved').length;
+  const activeDeals = deals.filter(d => d.status === 'approved');
+  const pendingApps = deals.filter(d => d.status === 'pending');
 
   return (
     <>
-      <header className="px-5 pt-6 pb-2">
-        <p className="text-sm text-gray-400">{greeting}</p>
-        <h1 className="text-xl font-bold text-gray-900">Your dashboard</h1>
-      </header>
-
-      <div className="grid grid-cols-2 gap-3 px-5">
-        <StatCard label="Total earnings" value={formatCurrency(totalEarnings)} />
-        <StatCard label="Pending payout" value={formatCurrency(pendingPayout)} />
-        <StatCard label="Active deals" value={String(activeCount)} />
-        <StatCard label="Applications" value={String(deals.length)} />
+      {/* Header */}
+      <div className="px-5 pt-6 pb-4 flex items-center gap-3">
+        <Avatar name={displayName} />
+        <div>
+          <p className="text-xs text-gray-400">{greeting}</p>
+          <h1 className="text-lg font-bold text-gray-900">{displayName}</h1>
+        </div>
       </div>
 
-      <section className="mx-5 mt-6 pb-6">
-        <div className="flex items-center justify-between">
-          <h2 className="text-base font-semibold text-gray-900">Your deals</h2>
-          <Link href="/deals" className="text-xs text-purple-600 font-medium">Browse deals</Link>
-        </div>
-        <div className="mt-3 space-y-3">
-          {deals.length === 0 ? (
-            <Card variant="surface" className="py-8 text-center">
-              <p className="text-sm text-gray-500">No deals yet. Apply to your first one!</p>
-              <Link href="/deals">
-                <Button variant="primary" size="sm" className="mt-3">Browse deals</Button>
-              </Link>
-            </Card>
-          ) : (
-            deals.map((deal) => (
-              <Card key={deal.id} variant="surface" className="flex items-center justify-between">
-                <div className="min-w-0 flex-1">
-                  <p className="text-sm font-semibold text-gray-900 truncate">{deal.title}</p>
-                  <p className="text-xs text-gray-400">{deal.brand_name} &middot; {deal.revenue_share_pct}% rev share</p>
-                </div>
-                <div className="ml-3 text-right shrink-0">
-                  <p className="text-sm font-bold text-gray-900">{formatCurrency(deal.earned)}</p>
-                  <Badge variant={deal.status === 'approved' ? 'approved' : 'pending'}>
-                    {deal.status === 'approved' ? 'Active' : 'Pending'}
-                  </Badge>
-                </div>
-              </Card>
-            ))
-          )}
-        </div>
-      </section>
+      {!stripeConnected && <StripeBanner role="creator" />}
+
+      {/* Stats */}
+      <div className="grid grid-cols-2 gap-3 px-5 mt-4">
+        <Stat label="Earnings" value={formatCurrency(totalEarnings)} icon={<DollarSign className="h-3.5 w-3.5" />} />
+        <Stat label="Pending" value={formatCurrency(pendingPayout)} icon={<DollarSign className="h-3.5 w-3.5" />} />
+      </div>
+
+      {/* Active deals */}
+      {activeDeals.length > 0 ? (
+        <>
+          <SectionHeader title="Active deals" action="Browse more" actionHref="/deals" />
+          <div className="mx-5 rounded-2xl bg-white border border-gray-100 overflow-hidden">
+            {activeDeals.map(deal => (
+              <DealRow
+                key={deal.id}
+                title={deal.title}
+                subtitle={`${deal.brand_name} · ${deal.revenue_share_pct}% share`}
+                rightTop={formatCurrency(deal.earned)}
+                rightBottom="earned"
+                badgeColor="bg-green-500"
+              />
+            ))}
+          </div>
+        </>
+      ) : (
+        <>
+          <SectionHeader title="Active deals" />
+          <EmptyCard
+            icon={<Search className="h-6 w-6" />}
+            title="No active deals yet"
+            body="Browse deals from brands looking for creators like you."
+            ctaLabel="Browse deals"
+            ctaHref="/deals"
+          />
+        </>
+      )}
+
+      {/* Pending applications */}
+      {pendingApps.length > 0 && (
+        <>
+          <SectionHeader title="Pending applications" />
+          <div className="mx-5 rounded-2xl bg-white border border-gray-100 overflow-hidden">
+            {pendingApps.map(deal => (
+              <DealRow
+                key={deal.id}
+                title={deal.title}
+                subtitle={deal.brand_name}
+                rightTop={`${deal.revenue_share_pct}%`}
+                rightBottom="awaiting review"
+                badgeColor="bg-amber-400"
+              />
+            ))}
+          </div>
+        </>
+      )}
+
+      {/* Quick actions */}
+      <SectionHeader title="Quick actions" />
+      <div className="mx-5 space-y-2 pb-8">
+        <QuickAction icon={<Search className="h-4 w-4" />} label="Browse deals" href="/deals" />
+        <QuickAction icon={<Zap className="h-4 w-4" />} label="Connect Stripe" href="/onboarding" />
+      </div>
     </>
   );
 }
 
-/* ─── Brand view ─── */
+/* ─── Brand dashboard ─── */
 
 interface BrandDeal {
   id: string;
@@ -113,77 +267,95 @@ interface LedgerRow {
   paid: boolean;
 }
 
-function BrandDashboard({ deals, ledger, totalRevenue, commissionsOwed, creatorCount }: {
+function BrandView({ deals, ledger, totalRevenue, commissionsOwed, creatorCount, displayName, stripeConnected }: {
   deals: BrandDeal[];
   ledger: LedgerRow[];
   totalRevenue: number;
   commissionsOwed: number;
   creatorCount: number;
+  displayName: string;
+  stripeConnected: boolean;
 }) {
   const greeting = getGreeting();
-  const activeDeals = deals.filter(d => d.status === 'active').length;
+  const activeDeals = deals.filter(d => d.status === 'active');
 
   return (
     <>
-      <header className="px-5 pt-6 pb-2">
-        <p className="text-sm text-gray-400">{greeting}</p>
-        <h1 className="text-xl font-bold text-gray-900">Brand dashboard</h1>
-      </header>
-
-      <div className="grid grid-cols-2 gap-3 px-5">
-        <StatCard label="Revenue tracked" value={formatCurrency(totalRevenue)} />
-        <StatCard label="Commissions owed" value={formatCurrency(commissionsOwed)} />
-        <StatCard label="Active creators" value={String(creatorCount)} />
-        <StatCard label="Active deals" value={String(activeDeals)} />
+      {/* Header */}
+      <div className="px-5 pt-6 pb-4 flex items-center gap-3">
+        <Avatar name={displayName} />
+        <div>
+          <p className="text-xs text-gray-400">{greeting}</p>
+          <h1 className="text-lg font-bold text-gray-900">{displayName}</h1>
+        </div>
       </div>
 
-      <section className="mx-5 mt-6">
-        <div className="flex items-center justify-between">
-          <h2 className="text-base font-semibold text-gray-900">Your deals</h2>
-          <Link href="/deals" className="text-xs text-purple-600 font-medium">View all</Link>
-        </div>
-        <div className="mt-3 space-y-3">
-          {deals.length === 0 ? (
-            <Card variant="surface" className="py-8 text-center">
-              <p className="text-sm text-gray-500">No deals created yet.</p>
-            </Card>
-          ) : (
-            deals.map((deal) => (
-              <Card key={deal.id} variant="surface" className="flex items-center justify-between">
-                <div className="min-w-0 flex-1">
-                  <p className="text-sm font-semibold text-gray-900 truncate">{deal.title}</p>
-                  <p className="text-xs text-gray-400">{deal.revenue_share_pct}% rev share</p>
-                </div>
-                <Badge variant={deal.status === 'active' ? 'approved' : 'pending'}>{deal.status}</Badge>
-              </Card>
-            ))
-          )}
-        </div>
-      </section>
+      {!stripeConnected && <StripeBanner role="brand" />}
 
-      <section className="mx-5 mt-6 pb-6">
-        <h2 className="text-base font-semibold text-gray-900">Recent ledger</h2>
-        <div className="mt-3 space-y-3">
-          {ledger.length === 0 ? (
-            <Card variant="surface" className="py-6 text-center">
-              <p className="text-sm text-gray-500">No ledger entries yet.</p>
-            </Card>
-          ) : (
-            ledger.map((entry) => (
-              <Card key={entry.id} variant="surface" className="flex items-center justify-between">
-                <div className="min-w-0">
-                  <p className="text-sm font-semibold text-gray-900 truncate">{entry.creator_name}</p>
-                  <p className="text-xs text-gray-400">{new Date(entry.period_start).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}</p>
-                </div>
-                <div className="ml-3 flex items-center gap-2 shrink-0">
-                  <p className="text-sm font-bold text-gray-900">{formatCurrency(entry.amount)}</p>
-                  <Badge variant={entry.paid ? 'approved' : 'pending'}>{entry.paid ? 'Paid' : 'Pending'}</Badge>
-                </div>
-              </Card>
-            ))
-          )}
-        </div>
-      </section>
+      {/* Stats */}
+      <div className="grid grid-cols-2 gap-3 px-5 mt-4">
+        <Stat label="Revenue" value={formatCurrency(totalRevenue)} icon={<DollarSign className="h-3.5 w-3.5" />} />
+        <Stat label="Commissions" value={formatCurrency(commissionsOwed)} icon={<DollarSign className="h-3.5 w-3.5" />} />
+        <Stat label="Creators" value={String(creatorCount)} icon={<Users className="h-3.5 w-3.5" />} />
+        <Stat label="Active deals" value={String(activeDeals.length)} icon={<Tag className="h-3.5 w-3.5" />} />
+      </div>
+
+      {/* Deals */}
+      {deals.length > 0 ? (
+        <>
+          <SectionHeader title="Your deals" action="View all" actionHref="/deals" />
+          <div className="mx-5 rounded-2xl bg-white border border-gray-100 overflow-hidden">
+            {deals.map(deal => (
+              <DealRow
+                key={deal.id}
+                title={deal.title}
+                subtitle={`${deal.revenue_share_pct}% rev share`}
+                rightTop={deal.status}
+                rightBottom=""
+                badgeColor={deal.status === 'active' ? 'bg-green-500' : 'bg-gray-300'}
+              />
+            ))}
+          </div>
+        </>
+      ) : (
+        <>
+          <SectionHeader title="Your deals" />
+          <EmptyCard
+            icon={<Plus className="h-6 w-6" />}
+            title="Create your first deal"
+            body="Set up a revenue share deal and start working with creators."
+            ctaLabel="Create deal"
+            ctaHref="/deals"
+          />
+        </>
+      )}
+
+      {/* Ledger */}
+      {ledger.length > 0 && (
+        <>
+          <SectionHeader title="Recent payments" />
+          <div className="mx-5 rounded-2xl bg-white border border-gray-100 overflow-hidden">
+            {ledger.map(entry => (
+              <DealRow
+                key={entry.id}
+                title={entry.creator_name}
+                subtitle={new Date(entry.period_start).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}
+                rightTop={formatCurrency(entry.amount)}
+                rightBottom={entry.paid ? 'paid' : 'pending'}
+                badgeColor={entry.paid ? 'bg-green-500' : 'bg-amber-400'}
+              />
+            ))}
+          </div>
+        </>
+      )}
+
+      {/* Quick actions */}
+      <SectionHeader title="Quick actions" />
+      <div className="mx-5 space-y-2 pb-8">
+        <QuickAction icon={<Plus className="h-4 w-4" />} label="Create a deal" href="/deals" />
+        <QuickAction icon={<Zap className="h-4 w-4" />} label="Connect Stripe" href="/onboarding" />
+        <QuickAction icon={<Users className="h-4 w-4" />} label="Browse deals" href="/deals" />
+      </div>
     </>
   );
 }
@@ -218,7 +390,6 @@ export default function DashboardPage() {
     async function loadCreator() {
       const uid = user!.id;
 
-      // Get applications
       const { data: apps } = await supabase
         .from('applications')
         .select('id, status, deal_id')
@@ -226,7 +397,6 @@ export default function DashboardPage() {
 
       const dealIds = (apps || []).map((a: any) => a.deal_id);
 
-      // Get deal details
       let dealsMap: Record<string, any> = {};
       if (dealIds.length > 0) {
         const { data: dealsData } = await supabase
@@ -236,7 +406,6 @@ export default function DashboardPage() {
         (dealsData || []).forEach((d: any) => { dealsMap[d.id] = d; });
       }
 
-      // Get brand names
       const brandIds = [...new Set(Object.values(dealsMap).map((d: any) => d.brand_id))];
       let brandsMap: Record<string, string> = {};
       if (brandIds.length > 0) {
@@ -247,7 +416,6 @@ export default function DashboardPage() {
         (profiles || []).forEach((p: any) => { brandsMap[p.id] = p.display_name; });
       }
 
-      // Get attributed sales (revenue)
       const { data: sales } = await supabase
         .from('attributed_sales')
         .select('commission_cents, deal_id')
@@ -260,7 +428,6 @@ export default function DashboardPage() {
         revenueByDeal[r.deal_id] = (revenueByDeal[r.deal_id] || 0) + (r.commission_cents || 0);
       });
 
-      // Pending ledger entries
       const { data: pending } = await supabase
         .from('ledger_entries')
         .select('commission_owed_cents')
@@ -315,7 +482,6 @@ export default function DashboardPage() {
         });
       }
 
-      // Ledger
       let ledgerRows: LedgerRow[] = [];
       if (dIds.length > 0) {
         const { data: lData } = await supabase
@@ -359,19 +525,36 @@ export default function DashboardPage() {
   if (authLoading || (!user && !authLoading)) {
     return (
       <main className="flex flex-col min-h-screen bg-gray-50 pb-20">
-        <DashboardSkeleton />
+        <LoadingSkeleton />
       </main>
     );
   }
 
+  const displayName = user?.display_name || 'User';
+  const stripeConnected = !!user?.stripe_account_id;
+
   return (
     <main id="main-content" className="flex flex-col min-h-screen bg-gray-50 pb-20">
       {dataLoading ? (
-        <DashboardSkeleton />
+        <LoadingSkeleton />
       ) : role === 'creator' ? (
-        <CreatorDashboard deals={creatorDeals} totalEarnings={totalEarnings} pendingPayout={pendingPayout} />
+        <CreatorView
+          deals={creatorDeals}
+          totalEarnings={totalEarnings}
+          pendingPayout={pendingPayout}
+          displayName={displayName}
+          stripeConnected={stripeConnected}
+        />
       ) : (
-        <BrandDashboard deals={brandDeals} ledger={ledger} totalRevenue={totalRevenue} commissionsOwed={commissionsOwed} creatorCount={creatorCount} />
+        <BrandView
+          deals={brandDeals}
+          ledger={ledger}
+          totalRevenue={totalRevenue}
+          commissionsOwed={commissionsOwed}
+          creatorCount={creatorCount}
+          displayName={displayName}
+          stripeConnected={stripeConnected}
+        />
       )}
 
       <NavBar
