@@ -186,7 +186,7 @@ export default function DealsPage() {
         </div>
 
         {/* Filter chips */}
-        <div className="mt-3 flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
+        <nav aria-label="Filter deals by category" className="mt-3 flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
           {CATEGORIES.map((cat) => (
             <button
               key={cat}
@@ -200,7 +200,7 @@ export default function DealsPage() {
               {cat}
             </button>
           ))}
-        </div>
+        </nav>
       </header>
 
       {/* Deal grid */}

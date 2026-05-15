@@ -13,6 +13,20 @@ export const metadata: Metadata = {
       'Join as a brand or creator. Post deals or earn commission with Stripe-verified tracking.',
     url: 'https://upsideshare.com/signup',
     type: 'website',
+    images: [
+      {
+        url: 'https://upsideshare.com/og-image.png',
+        width: 1200,
+        height: 630,
+        alt: 'UpsideShare - Brands and creators aligned by revenue',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Sign Up for UpsideShare',
+    description: 'Join as a brand or creator. Revenue share with Stripe-verified tracking.',
+    images: ['https://upsideshare.com/og-image.png'],
   },
 };
 
