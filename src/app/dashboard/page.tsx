@@ -23,7 +23,6 @@ function DashboardSkeleton() {
         ))}
       </div>
       <Skeleton className="h-48 w-full" />
-      <Skeleton className="h-32 w-full" />
     </div>
   );
 }
@@ -58,7 +57,7 @@ function CreatorDashboard({ deals, totalEarnings, pendingPayout }: {
         <StatCard label="Total earnings" value={formatCurrency(totalEarnings)} />
         <StatCard label="Pending payout" value={formatCurrency(pendingPayout)} />
         <StatCard label="Active deals" value={String(activeCount)} />
-        <StatCard label="Back office" value="Manage" />
+        <StatCard label="Applications" value={String(deals.length)} />
       </div>
 
       <section className="mx-5 mt-6 pb-6">
@@ -69,7 +68,7 @@ function CreatorDashboard({ deals, totalEarnings, pendingPayout }: {
         <div className="mt-3 space-y-3">
           {deals.length === 0 ? (
             <Card variant="surface" className="py-8 text-center">
-              <p className="text-sm text-gray-500">No active deals yet.</p>
+              <p className="text-sm text-gray-500">No deals yet. Apply to your first one!</p>
               <Link href="/deals">
                 <Button variant="primary" size="sm" className="mt-3">Browse deals</Button>
               </Link>
@@ -101,10 +100,9 @@ function CreatorDashboard({ deals, totalEarnings, pendingPayout }: {
 interface BrandDeal {
   id: string;
   title: string;
-  spots_taken: number;
-  spots_total: number;
   status: string;
   revenue_share_pct: number;
+  slug: string;
 }
 
 interface LedgerRow {
@@ -154,7 +152,7 @@ function BrandDashboard({ deals, ledger, totalRevenue, commissionsOwed, creatorC
               <Card key={deal.id} variant="surface" className="flex items-center justify-between">
                 <div className="min-w-0 flex-1">
                   <p className="text-sm font-semibold text-gray-900 truncate">{deal.title}</p>
-                  <p className="text-xs text-gray-400">{deal.spots_taken}/{deal.spots_total} spots &middot; {deal.revenue_share_pct}%</p>
+                  <p className="text-xs text-gray-400">{deal.revenue_share_pct}% rev share</p>
                 </div>
                 <Badge variant={deal.status === 'active' ? 'approved' : 'pending'}>{deal.status}</Badge>
               </Card>
@@ -197,12 +195,10 @@ export default function DashboardPage() {
   const router = useRouter();
   const [dataLoading, setDataLoading] = useState(true);
 
-  // Creator state
   const [creatorDeals, setCreatorDeals] = useState<CreatorDeal[]>([]);
   const [totalEarnings, setTotalEarnings] = useState(0);
   const [pendingPayout, setPendingPayout] = useState(0);
 
-  // Brand state
   const [brandDeals, setBrandDeals] = useState<BrandDeal[]>([]);
   const [ledger, setLedger] = useState<LedgerRow[]>([]);
   const [totalRevenue, setTotalRevenue] = useState(0);
@@ -222,59 +218,59 @@ export default function DashboardPage() {
     async function loadCreator() {
       const uid = user!.id;
 
-      // Applications
+      // Get applications
       const { data: apps } = await supabase
         .from('applications')
         .select('id, status, deal_id')
         .eq('creator_id', uid);
 
-      const dealIds = (apps || []).map(a => a.deal_id);
+      const dealIds = (apps || []).map((a: any) => a.deal_id);
 
-      // Deals for those applications
-      let dealsMap: Record<string, { title: string; revenue_share_pct: number; brand_id: string }> = {};
+      // Get deal details
+      let dealsMap: Record<string, any> = {};
       if (dealIds.length > 0) {
         const { data: dealsData } = await supabase
           .from('deals')
           .select('id, title, revenue_share_pct, brand_id')
           .in('id', dealIds);
-        (dealsData || []).forEach(d => { dealsMap[d.id] = d; });
+        (dealsData || []).forEach((d: any) => { dealsMap[d.id] = d; });
       }
 
-      // Brand names
-      const brandIds = [...new Set(Object.values(dealsMap).map(d => d.brand_id))];
+      // Get brand names
+      const brandIds = [...new Set(Object.values(dealsMap).map((d: any) => d.brand_id))];
       let brandsMap: Record<string, string> = {};
       if (brandIds.length > 0) {
         const { data: profiles } = await supabase
           .from('profiles')
           .select('id, display_name')
           .in('id', brandIds);
-        (profiles || []).forEach(p => { brandsMap[p.id] = p.display_name; });
+        (profiles || []).forEach((p: any) => { brandsMap[p.id] = p.display_name; });
       }
 
-      // Revenue
-      const { data: revenue } = await supabase
-        .from('revenue_events')
+      // Get attributed sales (revenue)
+      const { data: sales } = await supabase
+        .from('attributed_sales')
         .select('commission_cents, deal_id')
         .eq('creator_id', uid);
 
       const revenueByDeal: Record<string, number> = {};
       let earnings = 0;
-      (revenue || []).forEach(r => {
+      (sales || []).forEach((r: any) => {
         earnings += r.commission_cents || 0;
         revenueByDeal[r.deal_id] = (revenueByDeal[r.deal_id] || 0) + (r.commission_cents || 0);
       });
 
-      // Pending ledger
+      // Pending ledger entries
       const { data: pending } = await supabase
         .from('ledger_entries')
-        .select('commission_total_cents')
+        .select('commission_owed_cents')
         .eq('creator_id', uid)
         .eq('brand_marked_paid', true)
         .eq('creator_confirmed', false);
 
-      const payout = (pending || []).reduce((s, e) => s + (e.commission_total_cents || 0), 0);
+      const payout = (pending || []).reduce((s: number, e: any) => s + (e.commission_owed_cents || 0), 0);
 
-      const mapped: CreatorDeal[] = (apps || []).map(app => {
+      const mapped: CreatorDeal[] = (apps || []).map((app: any) => {
         const deal = dealsMap[app.deal_id];
         return {
           id: app.deal_id,
@@ -297,22 +293,22 @@ export default function DashboardPage() {
 
       const { data: deals } = await supabase
         .from('deals')
-        .select('id, title, spots_taken, spots_total, status, revenue_share_pct')
+        .select('id, title, status, revenue_share_pct, slug')
         .eq('brand_id', uid)
         .order('created_at', { ascending: false })
         .limit(5);
 
-      const dIds = (deals || []).map(d => d.id);
+      const dIds = (deals || []).map((d: any) => d.id);
       let rev = 0;
       let comm = 0;
       const creators = new Set<string>();
 
       if (dIds.length > 0) {
-        const { data: revData } = await supabase
-          .from('revenue_events')
+        const { data: salesData } = await supabase
+          .from('attributed_sales')
           .select('amount_cents, commission_cents, creator_id')
           .in('deal_id', dIds);
-        (revData || []).forEach(r => {
+        (salesData || []).forEach((r: any) => {
           rev += r.amount_cents || 0;
           comm += r.commission_cents || 0;
           creators.add(r.creator_id);
@@ -324,31 +320,28 @@ export default function DashboardPage() {
       if (dIds.length > 0) {
         const { data: lData } = await supabase
           .from('ledger_entries')
-          .select('id, creator_id, period_start, commission_total_cents, brand_marked_paid')
+          .select('id, creator_id, period_start, commission_owed_cents, brand_marked_paid')
           .in('deal_id', dIds)
           .order('period_start', { ascending: false })
           .limit(5);
 
-        const creatorIds = [...new Set((lData || []).map(l => l.creator_id))];
+        const cIds = [...new Set((lData || []).map((l: any) => l.creator_id))];
         let namesMap: Record<string, string> = {};
-        if (creatorIds.length > 0) {
-          const { data: profiles } = await supabase
-            .from('profiles')
-            .select('id, display_name')
-            .in('id', creatorIds);
-          (profiles || []).forEach(p => { namesMap[p.id] = p.display_name; });
+        if (cIds.length > 0) {
+          const { data: profs } = await supabase.from('profiles').select('id, display_name').in('id', cIds);
+          (profs || []).forEach((p: any) => { namesMap[p.id] = p.display_name; });
         }
 
-        ledgerRows = (lData || []).map(l => ({
+        ledgerRows = (lData || []).map((l: any) => ({
           id: l.id,
           creator_name: namesMap[l.creator_id] || 'Creator',
           period_start: l.period_start,
-          amount: l.commission_total_cents,
+          amount: l.commission_owed_cents,
           paid: l.brand_marked_paid,
         }));
       }
 
-      setBrandDeals(deals || []);
+      setBrandDeals((deals || []) as BrandDeal[]);
       setLedger(ledgerRows);
       setTotalRevenue(rev);
       setCommissionsOwed(comm);
@@ -386,7 +379,6 @@ export default function DashboardPage() {
         activeTab={role === 'creator' ? 'home' : 'revenue'}
         onTabChange={(tab) => {
           if (tab === 'deals') router.push('/deals');
-          else if (tab === 'home' || tab === 'revenue') router.push('/dashboard');
           else if (tab === 'equity') router.push('/equity');
         }}
       />
