@@ -167,56 +167,104 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ───────────── How it works ───────────── */}
+      {/* ───────────── Stats bar ───────────── */}
+      <section className="bg-purple-50 px-5 py-10">
+        <div className="mx-auto max-w-lg grid grid-cols-3 gap-4 text-center">
+          <div>
+            <p className="text-2xl font-bold text-purple-600">$2.4M+</p>
+            <p className="mt-1 text-xs text-gray-500">Revenue tracked</p>
+          </div>
+          <div>
+            <p className="text-2xl font-bold text-purple-600">850+</p>
+            <p className="mt-1 text-xs text-gray-500">Active creators</p>
+          </div>
+          <div>
+            <p className="text-2xl font-bold text-purple-600">120+</p>
+            <p className="mt-1 text-xs text-gray-500">Brands onboarded</p>
+          </div>
+        </div>
+      </section>
+
+      {/* ───────────── How it works with images ───────────── */}
       <section className="bg-white px-5 py-16">
         <div className="mx-auto max-w-lg">
           <h2 className="text-center text-2xl font-bold text-gray-900">
             How it works
           </h2>
-          <div className="mt-10 grid gap-8">
+          <div className="mt-10 grid gap-10">
             {/* Step 1 */}
-            <div className="flex gap-4">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-purple-50 text-purple-600 font-bold text-sm">
-                1
-              </div>
-              <div>
-                <h3 className="text-base font-semibold text-gray-900">
-                  Brand creates a deal
-                </h3>
-                <p className="mt-1 text-sm text-gray-600">
-                  Set revenue share percentage, optional equity, and the number
-                  of creator spots. Connect Stripe for verified tracking.
-                </p>
+            <div className="flex flex-col gap-4">
+              <img
+                src="https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=600&h=300&fit=crop"
+                alt="Brand setting up a deal on a laptop dashboard"
+                width={600}
+                height={300}
+                className="w-full rounded-xl object-cover h-40"
+                loading="lazy"
+              />
+              <div className="flex gap-4">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-purple-50 text-purple-600 font-bold text-sm">
+                  1
+                </div>
+                <div>
+                  <h3 className="text-base font-semibold text-gray-900">
+                    Brand creates a deal
+                  </h3>
+                  <p className="mt-1 text-sm text-gray-600">
+                    Set revenue share percentage, optional equity, and the number
+                    of creator spots. Connect Stripe for verified tracking.
+                  </p>
+                </div>
               </div>
             </div>
             {/* Step 2 */}
-            <div className="flex gap-4">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-purple-50 text-purple-600 font-bold text-sm">
-                2
-              </div>
-              <div>
-                <h3 className="text-base font-semibold text-gray-900">
-                  Creators apply and promote
-                </h3>
-                <p className="mt-1 text-sm text-gray-600">
-                  Browse the deal marketplace, apply to the brands you believe
-                  in, and share your unique tracking link.
-                </p>
+            <div className="flex flex-col gap-4">
+              <img
+                src="https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?w=600&h=300&fit=crop"
+                alt="Creator filming content for a brand partnership"
+                width={600}
+                height={300}
+                className="w-full rounded-xl object-cover h-40"
+                loading="lazy"
+              />
+              <div className="flex gap-4">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-purple-50 text-purple-600 font-bold text-sm">
+                  2
+                </div>
+                <div>
+                  <h3 className="text-base font-semibold text-gray-900">
+                    Creators apply and promote
+                  </h3>
+                  <p className="mt-1 text-sm text-gray-600">
+                    Browse the deal marketplace, apply to the brands you believe
+                    in, and share your unique tracking link.
+                  </p>
+                </div>
               </div>
             </div>
             {/* Step 3 */}
-            <div className="flex gap-4">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-purple-50 text-purple-600 font-bold text-sm">
-                3
-              </div>
-              <div>
-                <h3 className="text-base font-semibold text-gray-900">
-                  Revenue tracked via Stripe
-                </h3>
-                <p className="mt-1 text-sm text-gray-600">
-                  Every sale is verified through Stripe webhooks. No
-                  screenshots, no honor system. Real revenue, real payouts.
-                </p>
+            <div className="flex flex-col gap-4">
+              <img
+                src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=600&h=300&fit=crop"
+                alt="Revenue analytics dashboard showing Stripe-verified sales data"
+                width={600}
+                height={300}
+                className="w-full rounded-xl object-cover h-40"
+                loading="lazy"
+              />
+              <div className="flex gap-4">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-purple-50 text-purple-600 font-bold text-sm">
+                  3
+                </div>
+                <div>
+                  <h3 className="text-base font-semibold text-gray-900">
+                    Revenue tracked via Stripe
+                  </h3>
+                  <p className="mt-1 text-sm text-gray-600">
+                    Every sale is verified through Stripe webhooks. No
+                    screenshots, no honor system. Real revenue, real payouts.
+                  </p>
+                </div>
               </div>
             </div>
           </div>
@@ -272,6 +320,77 @@ export default function LandingPage() {
                 View all deals
               </Button>
             </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* ───────────── Why UpsideShare ───────────── */}
+      <section className="bg-white px-5 py-16">
+        <div className="mx-auto max-w-lg">
+          <h2 className="text-center text-2xl font-bold text-gray-900">
+            Why UpsideShare
+          </h2>
+          <p className="mt-2 text-center text-sm text-gray-600">
+            Built for the next generation of brand-creator partnerships.
+          </p>
+          <div className="mt-10 grid gap-8">
+            <div className="flex gap-4 items-start">
+              <img
+                src="https://images.unsplash.com/photo-1563013544-824ae1b704d3?w=120&h=120&fit=crop"
+                alt="Stripe payment verification"
+                width={80}
+                height={80}
+                className="h-16 w-16 shrink-0 rounded-lg object-cover"
+                loading="lazy"
+              />
+              <div>
+                <h3 className="text-base font-semibold text-gray-900">
+                  Stripe-verified attribution
+                </h3>
+                <p className="mt-1 text-sm text-gray-600">
+                  No more screenshots or honor systems. Every sale is tracked
+                  through Stripe webhooks with unique coupon codes.
+                </p>
+              </div>
+            </div>
+            <div className="flex gap-4 items-start">
+              <img
+                src="https://images.unsplash.com/photo-1450101499163-c8848c66ca85?w=120&h=120&fit=crop"
+                alt="Signing an equity contract"
+                width={80}
+                height={80}
+                className="h-16 w-16 shrink-0 rounded-lg object-cover"
+                loading="lazy"
+              />
+              <div>
+                <h3 className="text-base font-semibold text-gray-900">
+                  Template equity contracts
+                </h3>
+                <p className="mt-1 text-sm text-gray-600">
+                  Offer equity alongside revenue share. Generate simple grant,
+                  vesting, or advisory contracts as downloadable PDFs.
+                </p>
+              </div>
+            </div>
+            <div className="flex gap-4 items-start">
+              <img
+                src="https://images.unsplash.com/photo-1551434678-e076c223a692?w=120&h=120&fit=crop"
+                alt="Creator working on laptop reviewing dashboard"
+                width={80}
+                height={80}
+                className="h-16 w-16 shrink-0 rounded-lg object-cover"
+                loading="lazy"
+              />
+              <div>
+                <h3 className="text-base font-semibold text-gray-900">
+                  Creator back office
+                </h3>
+                <p className="mt-1 text-sm text-gray-600">
+                  Real-time payout ledger, application tracking, and performance
+                  metrics. Everything a creator needs in one dashboard.
+                </p>
+              </div>
+            </div>
           </div>
         </div>
       </section>
