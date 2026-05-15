@@ -15,19 +15,24 @@ Deno.serve(async (req: Request) => {
   }
 
   try {
-    // Verify shared secret for cron authentication
-    const cronSecret = Deno.env.get("CRON_SECRET");
-    if (!cronSecret) {
-      console.error(`[${requestId}] CRON_SECRET not configured`);
+    const db = createServiceClient();
+
+    // Verify shared secret for cron authentication (read from app_secrets table)
+    const { data: secretRow, error: secretErr } = await db
+      .from("app_secrets")
+      .select("value")
+      .eq("key", "CRON_SECRET")
+      .single();
+
+    if (secretErr || !secretRow?.value) {
+      console.error(`[${requestId}] CRON_SECRET not found in app_secrets`);
       return errorResponse("server_error", "Cron secret not configured", 500, requestId);
     }
 
     const providedSecret = req.headers.get("x-cron-secret");
-    if (providedSecret !== cronSecret) {
+    if (providedSecret !== secretRow.value) {
       return errorResponse("unauthorized", "Invalid cron secret", 401, requestId);
     }
-
-    const db = createServiceClient();
 
     // Fetch all brands with active Stripe connections
     const { data: brands, error: brandsErr } = await db

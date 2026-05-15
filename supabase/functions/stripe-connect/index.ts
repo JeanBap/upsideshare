@@ -44,12 +44,18 @@ Deno.serve(async (req: Request) => {
       return errorResponse("forbidden", "Only brand accounts can connect Stripe", 403, requestId);
     }
 
-    // Exchange the authorization code with Stripe for an access token
-    const stripeSecretKey = Deno.env.get("STRIPE_SECRET_KEY");
-    if (!stripeSecretKey) {
-      console.error(`[${requestId}] STRIPE_SECRET_KEY not configured`);
+    // Read Stripe secret from app_secrets table (RLS-protected, service_role only)
+    const { data: secretRow, error: secretErr } = await db
+      .from("app_secrets")
+      .select("value")
+      .eq("key", "STRIPE_SECRET_KEY")
+      .single();
+
+    if (secretErr || !secretRow?.value) {
+      console.error(`[${requestId}] STRIPE_SECRET_KEY not found in app_secrets`);
       return errorResponse("server_error", "Stripe integration not configured", 500, requestId);
     }
+    const stripeSecretKey = secretRow.value;
 
     const stripe = new Stripe(stripeSecretKey, { apiVersion: "2023-10-16" });
 

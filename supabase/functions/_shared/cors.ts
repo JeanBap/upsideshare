@@ -2,7 +2,7 @@ export const corsHeaders: Record<string, string> = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "GET,POST,PATCH,OPTIONS",
   "Access-Control-Allow-Headers":
-    "authorization,content-type,x-request-id,apikey",
+    "authorization,content-type,x-request-id,x-cron-secret,apikey",
 };
 
 /**
