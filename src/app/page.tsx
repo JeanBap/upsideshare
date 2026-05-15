@@ -61,6 +61,27 @@ const FAQ_JSONLD = {
   ],
 };
 
+const TESTIMONIALS = [
+  {
+    name: 'Sarah Chen',
+    role: 'Beauty creator, 340K followers',
+    quote: 'I earned more in my first month with UpsideShare than six months of flat-rate sponsorships. Seeing real revenue data changes everything.',
+    avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=96&h=96&fit=crop&crop=face',
+  },
+  {
+    name: 'Marcus Johnson',
+    role: 'Fitness creator, 120K followers',
+    quote: 'The equity component is what got me. I am not just promoting a product, I am building something alongside the brand.',
+    avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=96&h=96&fit=crop&crop=face',
+  },
+  {
+    name: 'Elena Rodriguez',
+    role: 'Co-founder, GlowCo',
+    quote: 'We replaced our entire affiliate program with UpsideShare. Stripe verification means zero disputes over attribution.',
+    avatar: 'https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?w=96&h=96&fit=crop&crop=face',
+  },
+];
+
 const MOCK_DEALS = [
   {
     id: '1',
@@ -99,10 +120,27 @@ export default function LandingPage() {
     <main id="main-content" className="flex flex-col min-h-screen">
       <JsonLd data={HOME_JSONLD} />
       <JsonLd data={FAQ_JSONLD} />
-      {/* ───────────── Hero ───────────── */}
-      <section className="relative bg-gradient-to-b from-purple-600 to-purple-800 px-5 pb-16 pt-14 text-white">
-        <div className="mx-auto max-w-lg">
-          <span className="mb-4 inline-block rounded-full bg-white/15 px-3 py-1 text-xs font-semibold tracking-wide">
+      {/* ───────────── Hero with video background ───────────── */}
+      <section className="relative overflow-hidden px-5 pb-20 pt-16 text-white">
+        {/* Video background */}
+        <video
+          autoPlay
+          muted
+          loop
+          playsInline
+          className="absolute inset-0 h-full w-full object-cover"
+          poster="https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=1200&q=80"
+        >
+          <source
+            src="https://videos.pexels.com/video-files/3129671/3129671-uhd_2560_1440_30fps.mp4"
+            type="video/mp4"
+          />
+        </video>
+        {/* Dark overlay for readability */}
+        <div className="absolute inset-0 bg-gradient-to-b from-purple-900/80 to-purple-950/90" />
+
+        <div className="relative z-10 mx-auto max-w-lg">
+          <span className="mb-4 inline-block rounded-full bg-white/15 px-3 py-1 text-xs font-semibold tracking-wide backdrop-blur-sm">
             Revenue share + equity, verified
           </span>
           <h1 className="text-3xl font-bold leading-tight tracking-tight sm:text-4xl">
@@ -246,6 +284,38 @@ export default function LandingPage() {
           <p className="mt-3 text-sm text-purple-100">
             Free to join. Pay only when you earn.
           </p>
+        </div>
+      </section>
+
+      {/* ───────────── Testimonials ───────────── */}
+      <section className="bg-white px-5 py-16">
+        <div className="mx-auto max-w-lg">
+          <h2 className="text-center text-2xl font-bold text-gray-900">
+            Creators and brands love UpsideShare
+          </h2>
+          <div className="mt-10 grid gap-6">
+            {TESTIMONIALS.map((t) => (
+              <Card key={t.name} variant="surface" className="flex flex-col gap-4">
+                <p className="text-sm leading-relaxed text-gray-700 italic">
+                  &ldquo;{t.quote}&rdquo;
+                </p>
+                <div className="flex items-center gap-3">
+                  <img
+                    src={t.avatar}
+                    alt={t.name}
+                    width={40}
+                    height={40}
+                    className="h-10 w-10 rounded-full object-cover"
+                    loading="lazy"
+                  />
+                  <div>
+                    <p className="text-sm font-semibold text-gray-900">{t.name}</p>
+                    <p className="text-xs text-gray-500">{t.role}</p>
+                  </div>
+                </div>
+              </Card>
+            ))}
+          </div>
         </div>
       </section>
 
