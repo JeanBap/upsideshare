@@ -138,7 +138,6 @@ Deno.serve(async (req: Request) => {
           name,
           interest,
           source_page: sourcePage,
-          signed_up_at: new Date().toISOString(),
         },
         {
           onConflict: "email,interest",
