@@ -1,13 +1,3 @@
-/** @type {import('next').NextConfig} */
-const nextConfig = {
-  images: {
-    remotePatterns: [
-      {
-        protocol: 'https',
-        hostname: 'tosyulolriavzgkpwzrn.supabase.co',
-      },
-    ],
-  },
-};
-
-module.exports = nextConfig;
+// This file exists for backwards compatibility.
+// Configuration is in next.config.ts
+module.exports = {};
