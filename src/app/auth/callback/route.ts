@@ -2,7 +2,6 @@ import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-import type { CookieOptions } from '@supabase/ssr';
 
 export async function GET(request: NextRequest) {
   const requestUrl = new URL(request.url);
@@ -11,22 +10,27 @@ export async function GET(request: NextRequest) {
   const role = requestUrl.searchParams.get('role');
 
   if (code) {
-    const cookieStore = await cookies();
+    const cookieStore = cookies();
     const supabase = createServerClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
       {
         cookies: {
-          getAll() {
-            return cookieStore.getAll();
+          get(name: string) {
+            return cookieStore.get(name)?.value;
           },
-          setAll(cookiesToSet: Array<{ name: string; value: string; options: CookieOptions }>) {
+          set(name: string, value: string, options: Record<string, unknown>) {
             try {
-              cookiesToSet.forEach(({ name, value, options }) =>
-                cookieStore.set(name, value, options)
-              );
+              cookieStore.set({ name, value, ...options });
             } catch {
-              // Called from Server Component context
+              // Ignored in Server Component context
+            }
+          },
+          remove(name: string, options: Record<string, unknown>) {
+            try {
+              cookieStore.set({ name, value: '', ...options });
+            } catch {
+              // Ignored in Server Component context
             }
           },
         },
@@ -36,35 +40,44 @@ export async function GET(request: NextRequest) {
     const { data, error } = await supabase.auth.exchangeCodeForSession(code);
 
     if (!error && data.user) {
-      // If role was passed (from signup), update user metadata and profile
+      // If role was passed from signup, update profile
       if (role && (role === 'brand' || role === 'creator')) {
         await supabase.auth.updateUser({
           data: { role },
         });
 
-        // Update the profile role (the trigger may have created it with a default)
-        const serviceClient = createServerClient(
-          process.env.NEXT_PUBLIC_SUPABASE_URL!,
-          process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-          {
-            cookies: {
-              getAll() { return []; },
-              setAll() {},
-            },
-          }
-        );
+        // Update profile role via service client
+        const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+        if (serviceKey) {
+          const serviceClient = createServerClient(
+            process.env.NEXT_PUBLIC_SUPABASE_URL!,
+            serviceKey,
+            {
+              cookies: {
+                get() { return undefined; },
+                set() {},
+                remove() {},
+              },
+            }
+          );
 
-        await serviceClient
-          .from('profiles')
-          .upsert({
-            id: data.user.id,
-            role,
-            display_name: data.user.user_metadata?.full_name || data.user.email?.split('@')[0] || 'User',
-            email: data.user.email,
-          }, { onConflict: 'id' });
+          await serviceClient
+            .from('profiles')
+            .upsert({
+              id: data.user.id,
+              role,
+              display_name: data.user.user_metadata?.full_name || data.user.email?.split('@')[0] || 'User',
+              email: data.user.email,
+            }, { onConflict: 'id' });
+        }
       }
 
       return NextResponse.redirect(new URL(next, requestUrl.origin));
+    }
+
+    // Log the error for debugging
+    if (error) {
+      console.error('Auth callback error:', error.message);
     }
   }
 
