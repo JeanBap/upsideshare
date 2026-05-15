@@ -70,7 +70,7 @@ function CreatorDashboard({ data }: { data: CreatorData }) {
         />
         <StatCard
           label="Back office"
-          value={<Link href="/backoffice" className="text-purple-600 underline text-xs">Manage</Link>}
+          value="Manage"
         />
       </div>
 
