@@ -92,10 +92,6 @@ function DetailSkeleton() {
   );
 }
 
-export function generateStaticParams() {
-  return [];
-}
-
 export default function DealDetailPage() {
   const params = useParams();
   const slug = params?.slug as string;
