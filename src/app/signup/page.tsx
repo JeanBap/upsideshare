@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Building2, Palette, Mail } from 'lucide-react';
 import { Card } from '@/components/ui/Card';
@@ -10,7 +10,7 @@ import { cn } from '@/lib/utils';
 import { createClient } from '@/lib/supabase';
 import type { UserRole } from '@/lib/types';
 
-export default function SignupPage() {
+function SignupForm() {
   const searchParams = useSearchParams();
   const dealSlug = searchParams.get('deal');
   const authError = searchParams.get('error');
@@ -28,20 +28,17 @@ export default function SignupPage() {
     setError(null);
 
     const supabase = createClient();
-    const redirectTo = dealSlug
-      ? `${window.location.origin}/auth/callback?next=/deals`
-      : `${window.location.origin}/auth/callback`;
+    const callbackUrl = new URL('/auth/callback', window.location.origin);
+    callbackUrl.searchParams.set('role', selectedRole);
+    if (dealSlug) callbackUrl.searchParams.set('next', '/deals');
 
     const { error: oauthError } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo,
+        redirectTo: callbackUrl.toString(),
         queryParams: {
           access_type: 'offline',
           prompt: 'consent',
-        },
-        data: {
-          role: selectedRole,
         },
       },
     });
@@ -57,14 +54,14 @@ export default function SignupPage() {
     setSending(true);
 
     const supabase = createClient();
-    const redirectTo = dealSlug
-      ? `${window.location.origin}/auth/callback?next=/deals`
-      : `${window.location.origin}/auth/callback`;
+    const callbackUrl = new URL('/auth/callback', window.location.origin);
+    callbackUrl.searchParams.set('role', selectedRole);
+    if (dealSlug) callbackUrl.searchParams.set('next', '/deals');
 
     const { error: magicLinkError } = await supabase.auth.signInWithOtp({
       email,
       options: {
-        emailRedirectTo: redirectTo,
+        emailRedirectTo: callbackUrl.toString(),
         data: {
           role: selectedRole,
         },
@@ -274,5 +271,17 @@ export default function SignupPage() {
         </p>
       </div>
     </main>
+  );
+}
+
+export default function SignupPage() {
+  return (
+    <Suspense fallback={
+      <main className="flex min-h-screen items-center justify-center bg-purple-50">
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-purple-600 border-t-transparent" />
+      </main>
+    }>
+      <SignupForm />
+    </Suspense>
   );
 }
