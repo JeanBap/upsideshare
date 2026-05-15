@@ -1,22 +1,83 @@
 'use client';
 
 import React, { useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { Building2, Palette, Mail } from 'lucide-react';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { cn } from '@/lib/utils';
+import { createClient } from '@/lib/supabase';
 import type { UserRole } from '@/lib/types';
 
 export default function SignupPage() {
+  const searchParams = useSearchParams();
+  const dealSlug = searchParams.get('deal');
+  const authError = searchParams.get('error');
+
   const [selectedRole, setSelectedRole] = useState<UserRole | null>(null);
   const [email, setEmail] = useState('');
   const [sending, setSending] = useState(false);
+  const [magicLinkSent, setMagicLinkSent] = useState(false);
+  const [error, setError] = useState<string | null>(
+    authError === 'auth_callback_failed' ? 'Authentication failed. Please try again.' : null
+  );
 
-  function handleSendMagicLink() {
-    if (!email) return;
+  async function handleGoogleSignup() {
+    if (!selectedRole) return;
+    setError(null);
+
+    const supabase = createClient();
+    const redirectTo = dealSlug
+      ? `${window.location.origin}/auth/callback?next=/deals`
+      : `${window.location.origin}/auth/callback`;
+
+    const { error: oauthError } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo,
+        queryParams: {
+          access_type: 'offline',
+          prompt: 'consent',
+        },
+        data: {
+          role: selectedRole,
+        },
+      },
+    });
+
+    if (oauthError) {
+      setError(oauthError.message);
+    }
+  }
+
+  async function handleSendMagicLink() {
+    if (!email || !selectedRole) return;
+    setError(null);
     setSending(true);
-    setTimeout(() => setSending(false), 1500);
+
+    const supabase = createClient();
+    const redirectTo = dealSlug
+      ? `${window.location.origin}/auth/callback?next=/deals`
+      : `${window.location.origin}/auth/callback`;
+
+    const { error: magicLinkError } = await supabase.auth.signInWithOtp({
+      email,
+      options: {
+        emailRedirectTo: redirectTo,
+        data: {
+          role: selectedRole,
+        },
+      },
+    });
+
+    setSending(false);
+
+    if (magicLinkError) {
+      setError(magicLinkError.message);
+    } else {
+      setMagicLinkSent(true);
+    }
   }
 
   return (
@@ -40,6 +101,18 @@ export default function SignupPage() {
           <h2 className="text-center text-base font-semibold text-gray-900">
             Get started
           </h2>
+
+          {dealSlug && (
+            <p className="text-center text-xs text-purple-600 font-medium">
+              Signing up to apply for a deal
+            </p>
+          )}
+
+          {error && (
+            <div className="rounded-lg bg-red-50 p-3 text-center text-sm text-red-600">
+              {error}
+            </div>
+          )}
 
           <div className="grid grid-cols-2 gap-3">
             <button
@@ -106,13 +179,13 @@ export default function SignupPage() {
           </div>
 
           {/* Auth options (shown after role selection) */}
-          {selectedRole && (
+          {selectedRole && !magicLinkSent && (
             <div className="space-y-4 pt-2">
               <Button
                 variant="secondary"
                 fullWidth
                 size="lg"
-                onClick={() => {}}
+                onClick={handleGoogleSignup}
               >
                 <svg
                   className="h-5 w-5"
@@ -150,7 +223,7 @@ export default function SignupPage() {
                 placeholder="you@example.com"
                 type="email"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEmail(e.target.value)}
               />
 
               <Button
@@ -164,6 +237,25 @@ export default function SignupPage() {
                 <Mail className="h-4 w-4" />
                 Send magic link
               </Button>
+            </div>
+          )}
+
+          {/* Magic link confirmation */}
+          {magicLinkSent && (
+            <div className="space-y-3 pt-2 text-center">
+              <div className="flex h-12 w-12 mx-auto items-center justify-center rounded-full bg-green-50">
+                <Mail className="h-6 w-6 text-green-600" />
+              </div>
+              <p className="text-sm font-semibold text-gray-900">Check your email</p>
+              <p className="text-xs text-gray-500">
+                We sent a magic link to <strong>{email}</strong>. Click the link to sign in.
+              </p>
+              <button
+                onClick={() => { setMagicLinkSent(false); setEmail(''); }}
+                className="text-xs text-purple-600 hover:text-purple-800 underline"
+              >
+                Use a different email
+              </button>
             </div>
           )}
         </Card>
