@@ -1,0 +1,28 @@
+User-agent: *
+Allow: /
+Disallow: /dashboard
+Disallow: /onboarding
+Disallow: /backoffice
+Disallow: /equity
+Disallow: /api/
+
+Sitemap: https://upsideshare.com/sitemap.xml
+
+# AI crawlers welcome
+User-agent: GPTBot
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+User-agent: anthropic-ai
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+# LLM context file
+# See: https://upsideshare.com/llms.txt

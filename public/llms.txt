@@ -1,0 +1,30 @@
+# UpsideShare
+
+> A brand-creator revenue share and equity platform with Stripe-verified tracking.
+
+UpsideShare connects brands with creators through revenue share deals. Brands post deals with a percentage of revenue they will share. Creators apply, get unique tracking links or coupon codes, and earn commission on every sale they drive. All revenue is verified through Stripe webhooks. Top creators can also earn equity in the brands they promote.
+
+## Key features
+
+- Deal marketplace: brands post revenue share deals, creators browse and apply
+- Stripe-verified revenue tracking: every sale attributed via coupon codes or landing page links
+- Template equity contracts: simple grant, vesting, and advisory templates with PDF generation
+- Creator back office: sell merch, experiences, handcrafted goods, digital notes, or offer chat access
+- Two-step ledger: brand marks paid, creator confirms receipt
+- 5% platform fee on tracked revenue
+
+## Pages
+
+- Home: https://upsideshare.com/
+- Deal marketplace: https://upsideshare.com/deals
+- Sign up: https://upsideshare.com/signup
+
+## API
+
+- Waitlist signup: POST https://tosyulolriavzgkpwzrn.supabase.co/functions/v1/waitlist
+- Public deals: GET https://tosyulolriavzgkpwzrn.supabase.co/functions/v1/deals
+
+## Contact
+
+- Website: https://upsideshare.com
+- Email: hello@upsideshare.com

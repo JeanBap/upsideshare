@@ -7,6 +7,7 @@ import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Skeleton } from '@/components/ui/Skeleton';
+import { JsonLd } from '@/components/JsonLd';
 
 const MOCK_DEALS: Record<string, {
   slug: string;
@@ -135,6 +136,28 @@ export default function DealDetailPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 pb-10">
+      <JsonLd data={{
+        '@context': 'https://schema.org',
+        '@type': 'Offer',
+        name: deal.title,
+        description: deal.longDescription,
+        url: `https://upsideshare.com/deals/${deal.slug}`,
+        offeredBy: {
+          '@type': 'Organization',
+          name: deal.brandName,
+        },
+        eligibleRegion: 'Worldwide',
+        category: deal.category,
+      }} />
+      <JsonLd data={{
+        '@context': 'https://schema.org',
+        '@type': 'BreadcrumbList',
+        itemListElement: [
+          { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://upsideshare.com/' },
+          { '@type': 'ListItem', position: 2, name: 'Deals', item: 'https://upsideshare.com/deals' },
+          { '@type': 'ListItem', position: 3, name: deal.title },
+        ],
+      }} />
       {/* Back button */}
       <header className="sticky top-0 z-40 flex items-center gap-3 bg-white border-b border-gray-200 px-5 py-3">
         <Link href="/deals" className="flex items-center gap-1 text-sm font-medium text-purple-600">

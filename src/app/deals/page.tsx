@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { NavBar } from '@/components/ui/NavBar';
 import { Skeleton } from '@/components/ui/Skeleton';
+import { JsonLd } from '@/components/JsonLd';
 
 const CATEGORIES = ['All', 'Beauty', 'Health & Fitness', 'Lifestyle', 'Tech', 'Food & Drink', 'Fashion'];
 
@@ -145,6 +146,20 @@ export default function DealsPage() {
 
   return (
     <div className="flex flex-col min-h-screen bg-gray-50 pb-20">
+      <JsonLd data={{
+        '@context': 'https://schema.org',
+        '@type': 'ItemList',
+        name: 'Revenue Share Deals on UpsideShare',
+        description: 'Browse active brand-creator revenue share deals with Stripe-verified tracking.',
+        url: 'https://upsideshare.com/deals',
+        numberOfItems: MOCK_DEALS.length,
+        itemListElement: MOCK_DEALS.map((deal, i) => ({
+          '@type': 'ListItem',
+          position: i + 1,
+          url: `https://upsideshare.com/deals/${deal.slug}`,
+          name: deal.title,
+        })),
+      }} />
       {/* Header */}
       <header className="sticky top-0 z-40 bg-white border-b border-gray-200 px-5 pb-4 pt-6">
         <h1 className="text-xl font-bold text-gray-900">Deals</h1>

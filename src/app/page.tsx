@@ -5,6 +5,61 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
+import { JsonLd } from '@/components/JsonLd';
+
+const HOME_JSONLD = {
+  '@context': 'https://schema.org',
+  '@type': 'WebPage',
+  name: 'UpsideShare - Brand-Creator Revenue Share Platform',
+  description:
+    'Stripe-verified revenue tracking, template equity contracts, and a creator back office. Brands and creators aligned by revenue.',
+  url: 'https://upsideshare.com/',
+  mainEntity: {
+    '@type': 'SoftwareApplication',
+    name: 'UpsideShare',
+    applicationCategory: 'BusinessApplication',
+    operatingSystem: 'Web',
+    description:
+      'A platform connecting brands and creators through Stripe-verified revenue share deals with optional equity.',
+    offers: {
+      '@type': 'Offer',
+      price: '0',
+      priceCurrency: 'USD',
+      description: 'Free to join. 5% platform fee on tracked revenue.',
+    },
+  },
+};
+
+const FAQ_JSONLD = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: [
+    {
+      '@type': 'Question',
+      name: 'How does UpsideShare track revenue?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: 'Every sale is verified through Stripe webhooks. Creators get unique coupon codes or landing page links. When a customer uses either, the sale is automatically attributed to the creator.',
+      },
+    },
+    {
+      '@type': 'Question',
+      name: 'How much does UpsideShare cost?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: 'UpsideShare is free to join for both brands and creators. The platform charges a 5% fee on tracked revenue only when earnings are generated.',
+      },
+    },
+    {
+      '@type': 'Question',
+      name: 'Can creators earn equity through UpsideShare?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: 'Yes. Brands can offer equity alongside revenue share. UpsideShare provides template equity contracts (simple grant, vesting, and advisory) with automatic PDF generation.',
+      },
+    },
+  ],
+};
 
 const MOCK_DEALS = [
   {
@@ -42,6 +97,8 @@ const MOCK_DEALS = [
 export default function LandingPage() {
   return (
     <main id="main-content" className="flex flex-col min-h-screen">
+      <JsonLd data={HOME_JSONLD} />
+      <JsonLd data={FAQ_JSONLD} />
       {/* ───────────── Hero ───────────── */}
       <section className="relative bg-gradient-to-b from-purple-600 to-purple-800 px-5 pb-16 pt-14 text-white">
         <div className="mx-auto max-w-lg">
@@ -193,12 +250,20 @@ export default function LandingPage() {
       </section>
 
       {/* ───────────── Footer ───────────── */}
-      <footer className="bg-gray-900 px-5 py-8 text-center">
+      <footer className="bg-gray-900 px-5 py-10 text-center">
         <p className="text-sm font-semibold text-white">
-          Powered by UpsideShare
+          UpsideShare
         </p>
         <p className="mt-2 text-xs text-gray-400">
           All revenue tracked and verified via Stripe
+        </p>
+        <nav className="mt-4 flex justify-center gap-4 text-xs text-gray-500" aria-label="Footer">
+          <Link href="/deals" className="hover:text-gray-300">Deals</Link>
+          <Link href="/signup" className="hover:text-gray-300">Sign up</Link>
+          <a href="mailto:hello@upsideshare.com" className="hover:text-gray-300">Contact</a>
+        </nav>
+        <p className="mt-4 text-xs text-gray-600">
+          &copy; {new Date().getFullYear()} UpsideShare. All rights reserved.
         </p>
       </footer>
     </main>
