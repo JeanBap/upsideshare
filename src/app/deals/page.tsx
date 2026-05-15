@@ -156,7 +156,7 @@ export default function DealsPage() {
         itemListElement: MOCK_DEALS.map((deal, i) => ({
           '@type': 'ListItem',
           position: i + 1,
-          url: `https://upsideshare.com/deals/${deal.slug}`,
+          url: `https://upsideshare.com/signup?deal=${deal.slug}`,
           name: deal.title,
         })),
       }} />
@@ -216,7 +216,7 @@ export default function DealsPage() {
         ) : (
           <div className="grid gap-4">
             {filtered.map((deal) => (
-              <Link key={deal.id} href={`/deals/${deal.slug}`} className="block">
+              <Link key={deal.id} href={`/signup?deal=${deal.slug}`} className="block">
                 <Card variant="surface" className="flex flex-col gap-3 hover:shadow-md transition-shadow">
                   <div className="flex items-center gap-3">
                     <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-purple-50 text-purple-600 font-bold text-sm">

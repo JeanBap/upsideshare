@@ -120,6 +120,24 @@ export default function LandingPage() {
     <main id="main-content" className="flex flex-col min-h-screen">
       <JsonLd data={HOME_JSONLD} />
       <JsonLd data={FAQ_JSONLD} />
+
+      {/* ───────────── Sticky nav ───────────── */}
+      <header className="sticky top-0 z-50 flex items-center justify-between bg-white/80 backdrop-blur-md border-b border-gray-100 px-5 py-3">
+        <Link href="/" className="text-base font-bold text-purple-600">
+          UpsideShare
+        </Link>
+        <div className="flex items-center gap-3">
+          <Link href="/deals" className="text-xs font-medium text-gray-600 hover:text-gray-900">
+            Deals
+          </Link>
+          <Link href="/signup">
+            <Button variant="coral" size="sm">
+              Sign up
+            </Button>
+          </Link>
+        </div>
+      </header>
+
       {/* ───────────── Hero with video background ───────────── */}
       <section className="relative overflow-hidden px-5 pb-20 pt-16 text-white">
         {/* Video background */}
