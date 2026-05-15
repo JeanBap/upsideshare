@@ -6,7 +6,7 @@ import type { NextRequest } from 'next/server';
 export async function GET(request: NextRequest) {
   const requestUrl = new URL(request.url);
   const code = requestUrl.searchParams.get('code');
-  const next = requestUrl.searchParams.get('next') || '/';
+  const next = requestUrl.searchParams.get('next');
   const role = requestUrl.searchParams.get('role');
 
   if (code) {
@@ -40,10 +40,11 @@ export async function GET(request: NextRequest) {
     const { data, error } = await supabase.auth.exchangeCodeForSession(code);
 
     if (!error && data.user) {
-      // If role was passed from signup, update profile
-      if (role && (role === 'brand' || role === 'creator')) {
+      const userRole = role && (role === 'brand' || role === 'creator') ? role : null;
+
+      if (userRole) {
         await supabase.auth.updateUser({
-          data: { role },
+          data: { role: userRole },
         });
 
         // Update profile role via service client
@@ -65,17 +66,21 @@ export async function GET(request: NextRequest) {
             .from('profiles')
             .upsert({
               id: data.user.id,
-              role,
+              role: userRole,
               display_name: data.user.user_metadata?.full_name || data.user.email?.split('@')[0] || 'User',
               email: data.user.email,
             }, { onConflict: 'id' });
         }
       }
 
-      return NextResponse.redirect(new URL(next, requestUrl.origin));
+      // Determine redirect: explicit next param, or role-based dashboard
+      const finalRole = userRole || data.user.user_metadata?.role || 'creator';
+      const defaultRedirect = finalRole === 'brand' ? '/dashboard' : '/dashboard';
+      const redirectPath = next || defaultRedirect;
+
+      return NextResponse.redirect(new URL(redirectPath, requestUrl.origin));
     }
 
-    // Log the error for debugging
     if (error) {
       console.error('Auth callback error:', error.message);
     }

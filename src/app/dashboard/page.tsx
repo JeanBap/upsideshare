@@ -1,49 +1,18 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { StatCard } from '@/components/ui/StatCard';
 import { NavBar } from '@/components/ui/NavBar';
 import { Skeleton } from '@/components/ui/Skeleton';
+import { useAuth } from '@/components/Providers';
+import { createClient } from '@/lib/supabase';
 import { getGreeting, formatCurrency } from '@/lib/utils';
-import type { UserRole } from '@/lib/types';
-
-/* ─── Mock data: creator ─── */
-const CREATOR_STATS = {
-  totalEarnings: 234500,
-  pendingPayout: 45000,
-  activeDeals: 3,
-  backOfficeItems: 5,
-};
-
-const CREATOR_DEALS = [
-  { id: '1', title: 'Summer skincare launch', brand: 'GlowCo', revenueSharePct: 12, status: 'active' as const, earned: 89000 },
-  { id: '2', title: 'Protein bar creator program', brand: 'FuelBar', revenueSharePct: 15, status: 'active' as const, earned: 123500 },
-  { id: '3', title: 'Home office essentials', brand: 'DeskUp', revenueSharePct: 10, status: 'active' as const, earned: 22000 },
-];
-
-/* ─── Mock data: brand ─── */
-const BRAND_STATS = {
-  totalRevenue: 1845000,
-  commissionsOwed: 221400,
-  activeCreators: 12,
-  platformFeePct: 5,
-};
-
-const BRAND_CREATORS = [
-  { id: '1', name: 'Sarah Chen', revenueGenerated: 450000, commission: 54000 },
-  { id: '2', name: 'Marcus Johnson', revenueGenerated: 380000, commission: 45600 },
-  { id: '3', name: 'Aisha Patel', revenueGenerated: 315000, commission: 37800 },
-];
-
-const BRAND_LEDGER = [
-  { id: '1', creator: 'Sarah Chen', period: 'Apr 2026', amount: 18000, confirmed: false },
-  { id: '2', creator: 'Marcus Johnson', period: 'Apr 2026', amount: 15200, confirmed: false },
-  { id: '3', creator: 'Aisha Patel', period: 'Mar 2026', amount: 12600, confirmed: true },
-];
+import type { Deal, Application, LedgerEntry, RevenueEvent } from '@/lib/types';
 
 function DashboardSkeleton() {
   return (
@@ -60,7 +29,23 @@ function DashboardSkeleton() {
   );
 }
 
-function CreatorDashboard() {
+/* ─── Creator view ─── */
+
+interface CreatorData {
+  totalEarnings: number;
+  pendingPayout: number;
+  activeDeals: number;
+  deals: Array<{
+    id: string;
+    title: string;
+    brand_name: string;
+    revenue_share_pct: number;
+    earned: number;
+    status: string;
+  }>;
+}
+
+function CreatorDashboard({ data }: { data: CreatorData }) {
   const greeting = getGreeting();
 
   return (
@@ -70,66 +55,87 @@ function CreatorDashboard() {
         <h1 className="text-xl font-bold text-gray-900">Your dashboard</h1>
       </header>
 
-      {/* Stat cards */}
       <div className="grid grid-cols-2 gap-3 px-5">
         <StatCard
           label="Total earnings"
-          value={formatCurrency(CREATOR_STATS.totalEarnings)}
-          trend="+12% this month"
-          trendUp
+          value={formatCurrency(data.totalEarnings)}
         />
         <StatCard
           label="Pending payout"
-          value={formatCurrency(CREATOR_STATS.pendingPayout)}
+          value={formatCurrency(data.pendingPayout)}
         />
         <StatCard
           label="Active deals"
-          value={String(CREATOR_STATS.activeDeals)}
+          value={String(data.activeDeals)}
         />
         <StatCard
           label="Back office"
-          value={`${CREATOR_STATS.backOfficeItems} items`}
+          value={<Link href="/backoffice" className="text-purple-600 underline text-xs">Manage</Link>}
         />
       </div>
 
-      {/* Earnings trend chart placeholder */}
-      <section className="mx-5 mt-6">
-        <h2 className="text-base font-semibold text-gray-900">Earnings trend</h2>
-        <Card variant="surface" className="mt-3 flex h-48 items-center justify-center">
-          <div className="text-center">
-            <div className="flex h-12 w-12 mx-auto items-center justify-center rounded-full bg-purple-50 text-purple-600">
-              <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z" />
-              </svg>
-            </div>
-            <p className="mt-2 text-sm text-gray-400">Chart coming soon</p>
-          </div>
-        </Card>
-      </section>
-
-      {/* Active deals */}
       <section className="mx-5 mt-6 pb-6">
-        <h2 className="text-base font-semibold text-gray-900">Active deals</h2>
+        <div className="flex items-center justify-between">
+          <h2 className="text-base font-semibold text-gray-900">Your deals</h2>
+          <Link href="/deals" className="text-xs text-purple-600 font-medium">Browse deals</Link>
+        </div>
         <div className="mt-3 space-y-3">
-          {CREATOR_DEALS.map((deal) => (
-            <Card key={deal.id} variant="surface" className="flex items-center justify-between">
-              <div className="min-w-0 flex-1">
-                <p className="text-sm font-semibold text-gray-900 truncate">{deal.title}</p>
-                <p className="text-xs text-gray-400">{deal.brand} · {deal.revenueSharePct}% rev share</p>
-              </div>
-              <div className="ml-3 text-right shrink-0">
-                <p className="text-sm font-bold text-gray-900">{formatCurrency(deal.earned)}</p>
-                <Badge variant="approved">Active</Badge>
-              </div>
+          {data.deals.length === 0 ? (
+            <Card variant="surface" className="py-8 text-center">
+              <p className="text-sm text-gray-500">No active deals yet.</p>
+              <Link href="/deals">
+                <Button variant="primary" size="sm" className="mt-3">
+                  Browse deals
+                </Button>
+              </Link>
             </Card>
-          ))}
+          ) : (
+            data.deals.map((deal) => (
+              <Card key={deal.id} variant="surface" className="flex items-center justify-between">
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-semibold text-gray-900 truncate">{deal.title}</p>
+                  <p className="text-xs text-gray-400">{deal.brand_name} &middot; {deal.revenue_share_pct}% rev share</p>
+                </div>
+                <div className="ml-3 text-right shrink-0">
+                  <p className="text-sm font-bold text-gray-900">{formatCurrency(deal.earned)}</p>
+                  <Badge variant={deal.status === 'approved' ? 'approved' : 'pending'}>
+                    {deal.status === 'approved' ? 'Active' : 'Pending'}
+                  </Badge>
+                </div>
+              </Card>
+            ))
+          )}
         </div>
       </section>
     </>
   );
 }
 
-function BrandDashboard() {
+/* ─── Brand view ─── */
+
+interface BrandData {
+  totalRevenue: number;
+  commissionsOwed: number;
+  activeCreators: number;
+  activeDeals: number;
+  deals: Array<{
+    id: string;
+    title: string;
+    spots_taken: number;
+    spots_total: number;
+    status: string;
+    revenue_share_pct: number;
+  }>;
+  ledger: Array<{
+    id: string;
+    creator_name: string;
+    period_start: string;
+    commission_total_cents: number;
+    brand_marked_paid: boolean;
+  }>;
+}
+
+function BrandDashboard({ data }: { data: BrandData }) {
   const greeting = getGreeting();
 
   return (
@@ -139,117 +145,254 @@ function BrandDashboard() {
         <h1 className="text-xl font-bold text-gray-900">Brand dashboard</h1>
       </header>
 
-      {/* Stat cards */}
       <div className="grid grid-cols-2 gap-3 px-5">
         <StatCard
-          label="Total revenue tracked"
-          value={formatCurrency(BRAND_STATS.totalRevenue)}
-          trend="+8% this month"
-          trendUp
+          label="Revenue tracked"
+          value={formatCurrency(data.totalRevenue)}
         />
         <StatCard
           label="Commissions owed"
-          value={formatCurrency(BRAND_STATS.commissionsOwed)}
+          value={formatCurrency(data.commissionsOwed)}
         />
         <StatCard
           label="Active creators"
-          value={String(BRAND_STATS.activeCreators)}
+          value={String(data.activeCreators)}
         />
         <StatCard
-          label="Platform fee"
-          value={`${BRAND_STATS.platformFeePct}%`}
+          label="Active deals"
+          value={String(data.activeDeals)}
         />
       </div>
 
-      {/* Revenue by creator */}
+      {/* Deals */}
       <section className="mx-5 mt-6">
-        <h2 className="text-base font-semibold text-gray-900">Revenue by creator</h2>
+        <div className="flex items-center justify-between">
+          <h2 className="text-base font-semibold text-gray-900">Your deals</h2>
+          <Link href="/deals" className="text-xs text-purple-600 font-medium">View all</Link>
+        </div>
         <div className="mt-3 space-y-3">
-          {BRAND_CREATORS.map((creator) => (
-            <Card key={creator.id} variant="surface" className="flex items-center justify-between">
-              <div className="flex items-center gap-3 min-w-0">
-                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-purple-50 text-purple-600 text-xs font-bold">
-                  {creator.name.charAt(0)}
-                </div>
-                <div className="min-w-0">
-                  <p className="text-sm font-semibold text-gray-900 truncate">{creator.name}</p>
-                  <p className="text-xs text-gray-400">Revenue: {formatCurrency(creator.revenueGenerated)}</p>
-                </div>
-              </div>
-              <div className="ml-3 text-right shrink-0">
-                <p className="text-sm font-bold text-coral-400">{formatCurrency(creator.commission)}</p>
-                <p className="text-[10px] text-gray-400">commission</p>
-              </div>
+          {data.deals.length === 0 ? (
+            <Card variant="surface" className="py-8 text-center">
+              <p className="text-sm text-gray-500">No deals created yet.</p>
+              <p className="text-xs text-gray-400 mt-1">Create your first deal to start working with creators.</p>
             </Card>
-          ))}
+          ) : (
+            data.deals.map((deal) => (
+              <Card key={deal.id} variant="surface" className="flex items-center justify-between">
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-semibold text-gray-900 truncate">{deal.title}</p>
+                  <p className="text-xs text-gray-400">{deal.spots_taken}/{deal.spots_total} spots &middot; {deal.revenue_share_pct}%</p>
+                </div>
+                <Badge variant={deal.status === 'active' ? 'approved' : 'pending'}>
+                  {deal.status}
+                </Badge>
+              </Card>
+            ))
+          )}
         </div>
       </section>
 
       {/* Ledger */}
       <section className="mx-5 mt-6 pb-6">
-        <h2 className="text-base font-semibold text-gray-900">Ledger</h2>
-        <p className="mt-1 text-xs text-gray-400">Pending confirmations and completed payouts</p>
+        <h2 className="text-base font-semibold text-gray-900">Recent ledger</h2>
         <div className="mt-3 space-y-3">
-          {BRAND_LEDGER.map((entry) => (
-            <Card key={entry.id} variant="surface" className="flex items-center justify-between">
-              <div className="min-w-0">
-                <p className="text-sm font-semibold text-gray-900 truncate">{entry.creator}</p>
-                <p className="text-xs text-gray-400">{entry.period}</p>
-              </div>
-              <div className="ml-3 flex items-center gap-2 shrink-0">
-                <p className="text-sm font-bold text-gray-900">{formatCurrency(entry.amount)}</p>
-                {entry.confirmed ? (
-                  <Badge variant="approved">Confirmed</Badge>
-                ) : (
-                  <Badge variant="pending">Pending</Badge>
-                )}
-              </div>
+          {data.ledger.length === 0 ? (
+            <Card variant="surface" className="py-6 text-center">
+              <p className="text-sm text-gray-500">No ledger entries yet.</p>
             </Card>
-          ))}
+          ) : (
+            data.ledger.map((entry) => (
+              <Card key={entry.id} variant="surface" className="flex items-center justify-between">
+                <div className="min-w-0">
+                  <p className="text-sm font-semibold text-gray-900 truncate">{entry.creator_name}</p>
+                  <p className="text-xs text-gray-400">{new Date(entry.period_start).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}</p>
+                </div>
+                <div className="ml-3 flex items-center gap-2 shrink-0">
+                  <p className="text-sm font-bold text-gray-900">{formatCurrency(entry.commission_total_cents)}</p>
+                  {entry.brand_marked_paid ? (
+                    <Badge variant="approved">Paid</Badge>
+                  ) : (
+                    <Badge variant="pending">Pending</Badge>
+                  )}
+                </div>
+              </Card>
+            ))
+          )}
         </div>
       </section>
     </>
   );
 }
 
+/* ─── Main page ─── */
+
 export default function DashboardPage() {
-  const [role, setRole] = useState<UserRole>('creator');
-  const [loading] = useState(false);
+  const { user, role, loading: authLoading } = useAuth();
+  const router = useRouter();
+  const [creatorData, setCreatorData] = useState<CreatorData | null>(null);
+  const [brandData, setBrandData] = useState<BrandData | null>(null);
+  const [dataLoading, setDataLoading] = useState(true);
+
+  // Redirect to signup if not authenticated
+  useEffect(() => {
+    if (!authLoading && !user) {
+      router.replace('/signup');
+    }
+  }, [authLoading, user, router]);
+
+  // Fetch data based on role
+  useEffect(() => {
+    if (!user) return;
+
+    const supabase = createClient();
+
+    async function fetchCreatorData() {
+      const userId = user!.id;
+
+      // Get approved applications with deal info
+      const { data: apps } = await supabase
+        .from('applications')
+        .select('id, status, deal_id, deals(id, title, revenue_share_pct, brand_id, profiles!deals_brand_id_fkey(display_name))')
+        .eq('creator_id', userId)
+        .in('status', ['approved', 'pending']);
+
+      // Get revenue events for this creator
+      const { data: revenue } = await supabase
+        .from('revenue_events')
+        .select('amount_cents, commission_cents, verified')
+        .eq('creator_id', userId);
+
+      // Get pending ledger entries
+      const { data: ledger } = await supabase
+        .from('ledger_entries')
+        .select('commission_total_cents, creator_confirmed')
+        .eq('creator_id', userId)
+        .eq('brand_marked_paid', true)
+        .eq('creator_confirmed', false);
+
+      const totalEarnings = (revenue || []).reduce((sum, r) => sum + (r.commission_cents || 0), 0);
+      const pendingPayout = (ledger || []).reduce((sum, l) => sum + (l.commission_total_cents || 0), 0);
+      const activeApps = (apps || []).filter(a => a.status === 'approved');
+
+      const deals = (apps || []).map(app => {
+        const deal = app.deals as any;
+        const brandProfile = deal?.profiles as any;
+        const dealRevenue = (revenue || [])
+          .filter((r: any) => r.deal_id === app.deal_id)
+          .reduce((sum: number, r: any) => sum + (r.commission_cents || 0), 0);
+
+        return {
+          id: app.deal_id,
+          title: deal?.title || 'Unknown deal',
+          brand_name: brandProfile?.display_name || 'Unknown brand',
+          revenue_share_pct: deal?.revenue_share_pct || 0,
+          earned: dealRevenue,
+          status: app.status,
+        };
+      });
+
+      setCreatorData({
+        totalEarnings,
+        pendingPayout,
+        activeDeals: activeApps.length,
+        deals,
+      });
+      setDataLoading(false);
+    }
+
+    async function fetchBrandData() {
+      const userId = user!.id;
+
+      // Get brand's deals
+      const { data: deals } = await supabase
+        .from('deals')
+        .select('id, title, spots_taken, spots_total, status, revenue_share_pct')
+        .eq('brand_id', userId)
+        .order('created_at', { ascending: false })
+        .limit(5);
+
+      // Get revenue events for brand's deals
+      const dealIds = (deals || []).map(d => d.id);
+      let totalRevenue = 0;
+      let commissionsOwed = 0;
+      let creatorIds = new Set<string>();
+
+      if (dealIds.length > 0) {
+        const { data: revenue } = await supabase
+          .from('revenue_events')
+          .select('amount_cents, commission_cents, creator_id')
+          .in('deal_id', dealIds);
+
+        totalRevenue = (revenue || []).reduce((sum, r) => sum + (r.amount_cents || 0), 0);
+        commissionsOwed = (revenue || []).reduce((sum, r) => sum + (r.commission_cents || 0), 0);
+        (revenue || []).forEach(r => creatorIds.add(r.creator_id));
+      }
+
+      // Get recent ledger entries
+      const { data: ledgerRaw } = await supabase
+        .from('ledger_entries')
+        .select('id, creator_id, period_start, commission_total_cents, brand_marked_paid, profiles!ledger_entries_creator_id_fkey(display_name)')
+        .in('deal_id', dealIds.length > 0 ? dealIds : ['none'])
+        .order('period_start', { ascending: false })
+        .limit(5);
+
+      const ledger = (ledgerRaw || []).map(entry => {
+        const profile = entry.profiles as any;
+        return {
+          id: entry.id,
+          creator_name: profile?.display_name || 'Creator',
+          period_start: entry.period_start,
+          commission_total_cents: entry.commission_total_cents,
+          brand_marked_paid: entry.brand_marked_paid,
+        };
+      });
+
+      setBrandData({
+        totalRevenue,
+        commissionsOwed,
+        activeCreators: creatorIds.size,
+        activeDeals: (deals || []).filter(d => d.status === 'active').length,
+        deals: deals || [],
+        ledger,
+      });
+      setDataLoading(false);
+    }
+
+    if (role === 'creator') {
+      fetchCreatorData();
+    } else {
+      fetchBrandData();
+    }
+  }, [user, role]);
+
+  if (authLoading || (!user && !authLoading)) {
+    return (
+      <main className="flex flex-col min-h-screen bg-gray-50 pb-20">
+        <DashboardSkeleton />
+      </main>
+    );
+  }
 
   return (
     <main id="main-content" className="flex flex-col min-h-screen bg-gray-50 pb-20">
-      {/* Role toggle (for demo) */}
-      <div className="sticky top-0 z-40 flex items-center justify-end gap-2 bg-white border-b border-gray-200 px-5 py-2">
-        <span className="text-xs text-gray-400">View as:</span>
-        <button
-          onClick={() => setRole('creator')}
-          className={`rounded-full px-3 py-1 text-xs font-semibold transition-colors ${
-            role === 'creator' ? 'bg-purple-600 text-white' : 'bg-gray-100 text-gray-600'
-          }`}
-        >
-          Creator
-        </button>
-        <button
-          onClick={() => setRole('brand')}
-          className={`rounded-full px-3 py-1 text-xs font-semibold transition-colors ${
-            role === 'brand' ? 'bg-purple-600 text-white' : 'bg-gray-100 text-gray-600'
-          }`}
-        >
-          Brand
-        </button>
-      </div>
-
-      {loading ? (
+      {dataLoading ? (
         <DashboardSkeleton />
       ) : role === 'creator' ? (
-        <CreatorDashboard />
+        <CreatorDashboard data={creatorData || { totalEarnings: 0, pendingPayout: 0, activeDeals: 0, deals: [] }} />
       ) : (
-        <BrandDashboard />
+        <BrandDashboard data={brandData || { totalRevenue: 0, commissionsOwed: 0, activeCreators: 0, activeDeals: 0, deals: [], ledger: [] }} />
       )}
 
       <NavBar
         role={role}
         activeTab={role === 'creator' ? 'home' : 'revenue'}
+        onTabChange={(tab) => {
+          if (tab === 'deals') router.push('/deals');
+          else if (tab === 'home' || tab === 'revenue') router.push('/dashboard');
+          else if (tab === 'profile' || tab === 'settings') router.push('/dashboard');
+          else if (tab === 'earnings') router.push('/dashboard');
+          else if (tab === 'equity') router.push('/equity');
+        }}
       />
     </main>
   );
