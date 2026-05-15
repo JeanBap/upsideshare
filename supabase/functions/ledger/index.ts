@@ -124,14 +124,33 @@ Deno.serve(async (req: Request) => {
     // POST /ledger/calculate -- compute monthly ledger from attributed_sales
     // ----------------------------------------------------------------
     if (req.method === "POST" && action === "calculate") {
-      const user = await getAuthUser(req);
-      if (!user) {
-        return errorResponse(
-          "unauthorized",
-          "Valid authorization token required",
-          401,
-          requestId,
-        );
+      // Check for cron secret first (automated trigger)
+      const cronSecret = req.headers.get("x-cron-secret");
+      const expectedSecret = Deno.env.get("CRON_SECRET");
+
+      if (cronSecret && expectedSecret && cronSecret === expectedSecret) {
+        // Cron-triggered: skip user auth, proceed with calculation
+      } else {
+        // User-triggered: require brand role
+        const user = await getAuthUser(req);
+        if (!user) {
+          return errorResponse(
+            "unauthorized",
+            "Valid authorization token required",
+            401,
+            requestId,
+          );
+        }
+        const db2 = createServiceClient();
+        const brandProfile = await requireRole(user, "brand", db2);
+        if (!brandProfile) {
+          return errorResponse(
+            "forbidden",
+            "Only brand accounts or cron can trigger ledger calculation",
+            403,
+            requestId,
+          );
+        }
       }
 
       let body: Record<string, unknown>;

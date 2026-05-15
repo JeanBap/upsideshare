@@ -12,6 +12,11 @@ import {
 const MAX_LIMIT = 50;
 const DEFAULT_LIMIT = 20;
 
+/** Escape special LIKE/ILIKE characters to prevent filter bypass */
+function escapeLike(input: string): string {
+  return input.replace(/[%_\\]/g, "\\$&");
+}
+
 function slugify(text: string): string {
   return text
     .toLowerCase()
@@ -64,9 +69,10 @@ Deno.serve(async (req: Request) => {
         .range(offset, offset + limit - 1);
 
       if (search.trim().length > 0) {
-        // Full-text search on title and description
+        // Escape LIKE special chars to prevent filter bypass
+        const safe = escapeLike(search.trim());
         query = query.or(
-          `title.ilike.%${search}%,description.ilike.%${search}%`,
+          `title.ilike.%${safe}%,description.ilike.%${safe}%`,
         );
       }
 

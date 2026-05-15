@@ -5,6 +5,32 @@ import {
 } from "../_shared/cors.ts";
 import { createServiceClient } from "../_shared/auth.ts";
 
+/* ------------------------------------------------------------------ */
+/*  Simple in-memory rate limiter (IP-based, 10 req/min)              */
+/* ------------------------------------------------------------------ */
+const RATE_WINDOW_MS = 60_000; // 1 minute
+const RATE_MAX = 10;
+const ipHits = new Map<string, { count: number; resetAt: number }>();
+
+function isRateLimited(ip: string): boolean {
+  const now = Date.now();
+  const entry = ipHits.get(ip);
+  if (!entry || now > entry.resetAt) {
+    ipHits.set(ip, { count: 1, resetAt: now + RATE_WINDOW_MS });
+    return false;
+  }
+  entry.count++;
+  return entry.count > RATE_MAX;
+}
+
+// Periodically clean stale entries to prevent memory growth
+setInterval(() => {
+  const now = Date.now();
+  for (const [ip, entry] of ipHits) {
+    if (now > entry.resetAt) ipHits.delete(ip);
+  }
+}, RATE_WINDOW_MS * 2);
+
 const VALID_INTERESTS = [
   "merchandise",
   "experiences",
@@ -24,6 +50,20 @@ Deno.serve(async (req: Request) => {
 
   const requestId =
     req.headers.get("x-request-id") ?? crypto.randomUUID();
+
+  // Rate limit check (IP-based, 10 req/min)
+  const clientIp =
+    req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ??
+    req.headers.get("cf-connecting-ip") ??
+    "unknown";
+  if (isRateLimited(clientIp)) {
+    return errorResponse(
+      "rate_limited",
+      "Too many requests. Please try again in a minute.",
+      429,
+      requestId,
+    );
+  }
 
   if (req.method !== "POST") {
     return errorResponse(
